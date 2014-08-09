@@ -9,10 +9,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
+ * Prepare supplied dataset for processing.
  *
  * @author Clarky
  */
@@ -20,7 +19,6 @@ public class ReadInDat {
 
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/";
-    private static final String DB_NAME = "test";
     private static final String USER = "root";
     private static final String PASS = "password";
 
@@ -33,34 +31,55 @@ public class ReadInDat {
      */
     public static void main(String[] args) {
         try {
+
+            // Create the database and table(s)
             CreateDatabase();
+
+            // Read and insert the data into the database
             readData("user_taggedmovies.dat");
+
+            // Shut down database resources
+            con.close();
+            statement.close();
+            //result.close(); // NOTE: NOT IN USE YET; CAUSES NULLPOINTER EXCEPTION WHEN EMPTY
         } catch (IOException ex) {
-            Logger.getLogger(ReadInDat.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
     /**
-     * Read in data from file, split on tab character into array and print all as independent pieces
+     * Read in data from file, split on tab character into array and insert required columns only
      *
      * @param location The location of the file to be read
-     * @throws java.io.IOException
+     * @throws java.io.IOException if the file is not found
+     * @throws java.sql.SQLException if an error occurs with the database
      */
     public static void readData(String location) throws IOException, SQLException {
         BufferedReader reader = new BufferedReader(new FileReader(location));
+
+        // Used to represent each line of the file as it is read
         String line;
-        
+
+        // Prepared statement for movie tags
+        PreparedStatement prepStatement = con.prepareStatement("INSERT INTO test.movie_tags("
+                + "USER_ID, MOVIE_ID, TAG_ID) VALUES (?, ?, ?)");
+
+        // Jump to the second line, skipping over column names
         line = reader.readLine();
+
+        // Read the file line-by-line, creating statements and adding to a batch insertion command
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split("\t");
-            
-            statement = con.createStatement();
-            String sql = "INSERT INTO test.movie_tags(USER_ID, MOVIE_ID, TAG_ID)"
-                    + "VALUES (" + parts[0] + ", " + parts[1] + ", " + parts[2] + ")";
-            statement.executeUpdate(sql);
+            prepStatement.setString(1, parts[0]);
+            prepStatement.setString(2, parts[1]);
+            prepStatement.setString(3, parts[2]);
+            prepStatement.addBatch();
         }
+
+        // Execute the batch insertion
+        prepStatement.executeBatch();
     }
 
     /**
@@ -68,6 +87,7 @@ public class ReadInDat {
      */
     private static void CreateDatabase() {
         try {
+
             // Register JDBC driver
             Class.forName(JDBC_DRIVER);
 
@@ -76,7 +96,9 @@ public class ReadInDat {
 
             // Create the database
             statement = con.createStatement();
-            String sql = "CREATE DATABASE test";
+            String sql = "DROP DATABASE test";
+            statement.executeUpdate(sql);
+            sql = "CREATE DATABASE test";
             statement.executeUpdate(sql);
 
             // Create the table(s)
