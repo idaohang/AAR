@@ -37,14 +37,13 @@ public class ReadInDat {
 
             // Read and insert the data into the database
             readData("user_taggedmovies.dat");
+            readData("tags.dat");
 
             // Shut down database resources
             con.close();
             statement.close();
             //result.close(); // NOTE: NOT IN USE YET; CAUSES NULLPOINTER EXCEPTION WHEN EMPTY
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -62,20 +61,43 @@ public class ReadInDat {
         // Used to represent each line of the file as it is read
         String line;
 
-        // Prepared statement for movie tags
-        PreparedStatement prepStatement = con.prepareStatement("INSERT INTO test.movie_tags("
-                + "USER_ID, MOVIE_ID, TAG_ID) VALUES (?, ?, ?)");
+        PreparedStatement prepStatement = null;
+        switch (location) {
+            case "user_taggedmovies.dat":
 
-        // Jump to the second line, skipping over column names
-        line = reader.readLine();
+                // Prepared statement for movie tags
+                prepStatement = con.prepareStatement("INSERT INTO capstone.movie_tags("
+                        + "USER_ID, MOVIE_ID, TAG_ID) VALUES (?, ?, ?)");
 
-        // Read the file line-by-line, creating statements and adding to a batch insertion command
-        while ((line = reader.readLine()) != null) {
-            String[] parts = line.split("\t");
-            prepStatement.setString(1, parts[0]);
-            prepStatement.setString(2, parts[1]);
-            prepStatement.setString(3, parts[2]);
-            prepStatement.addBatch();
+                // Jump to the second line, skipping over column names
+                line = reader.readLine();
+
+                // Read the file line-by-line, creating statements and adding to a batch insertion command
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split("\t");
+                    prepStatement.setString(1, parts[0]);
+                    prepStatement.setString(2, parts[1]);
+                    prepStatement.setString(3, parts[2]);
+                    prepStatement.addBatch();
+                }
+                break;
+            case "tags.dat":
+
+                // Prepared statement for movie tags
+                prepStatement = con.prepareStatement("INSERT INTO capstone.tags("
+                        + "TAG_ID, TAG_VAL) VALUES (?, ?)");
+
+                // Jump to the second line, skipping over column names
+                line = reader.readLine();
+
+                // Read the file line-by-line, creating statements and adding to a batch insertion command
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split("\t");
+                    prepStatement.setString(1, parts[0]);
+                    prepStatement.setString(2, parts[1]);
+                    prepStatement.addBatch();
+                }
+                break;
         }
 
         // Execute the batch insertion
@@ -96,14 +118,21 @@ public class ReadInDat {
 
             // Create the database
             statement = con.createStatement();
-            String sql = "DROP DATABASE test";
+            String sql = "DROP DATABASE IF EXISTS capstone";
             statement.executeUpdate(sql);
-            sql = "CREATE DATABASE test";
+            sql = "CREATE DATABASE capstone";
             statement.executeUpdate(sql);
 
             // Create the table(s)
             statement = con.createStatement();
-            sql = "CREATE TABLE test.movie_tags "
+            sql = "CREATE TABLE capstone.tags "
+                    + "(TAG_ID INTEGER NOT NULL, "
+                    + "TAG_VAL VARCHAR(100) NOT NULL, "
+                    + "PRIMARY KEY(TAG_ID))";
+            statement.executeUpdate(sql);
+
+            statement = con.createStatement();
+            sql = "CREATE TABLE capstone.movie_tags "
                     + "(USER_ID INTEGER NOT NULL, "
                     + "MOVIE_ID INTEGER NOT NULL, "
                     + "TAG_ID INTEGER NOT NULL, "
