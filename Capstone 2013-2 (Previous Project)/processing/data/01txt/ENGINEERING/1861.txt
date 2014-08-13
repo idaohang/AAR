@@ -1,0 +1,1 @@
+An all-digital single-bit resonator is presented. The resonator input can be either a single-bit or multi-bit signal and the resonator output is in single-bit format. This resonator structure contains no multi-bit multiplication operations, making the resonator efficient for implementation.

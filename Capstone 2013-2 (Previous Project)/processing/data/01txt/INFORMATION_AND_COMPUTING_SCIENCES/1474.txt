@@ -1,0 +1,1 @@
+The success of Web services in business relies on the discovery of Web services satisfying the needs of the service requester. In this paper we discuss the use of data mining in the service discovery process. We recommend a set of applications that can leverage problems concerned with the planning, development and maintenance of Web services.

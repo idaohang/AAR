@@ -1,0 +1,1 @@
+We present our experience from implementing the public-key cryptosystem of GonzÂ´alez, Boyd and Dawson. We discuss different computational methods and compare their relative efficiency experimentally. We also compare the efficiency of this cryptosystem with that of the ElGamal cipher.

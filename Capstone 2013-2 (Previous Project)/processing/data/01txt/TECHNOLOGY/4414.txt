@@ -1,0 +1,1 @@
+The results of a case study involving two major construction contracting companies are presented indicating the informational and other needs and considerations of construction contract bidding adjudication decision makers.  A strategic information model is described and the development of prototype decision support system based on Executive Information System technology.

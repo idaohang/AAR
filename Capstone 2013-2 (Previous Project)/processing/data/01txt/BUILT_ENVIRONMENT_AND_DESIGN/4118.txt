@@ -1,0 +1,1 @@
+A method is proposed for the empirical derivation of Raftery Curve probabilities from forecasted/actual value ratios.  The method is applied to a set of Hong Kong construction contract data.  Using the error of predicted ratios as the measure of opportunity cost, it is then shown how the method may be used to identify the best data poolings amongst subsets.

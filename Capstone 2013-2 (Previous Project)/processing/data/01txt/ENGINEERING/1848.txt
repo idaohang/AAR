@@ -1,0 +1,1 @@
+An iterative instantaneous frequency (IF) estimation scheme is presented in which successive IF estimates are obtained from the peak of the cross Wigner-Ville distribution (XWVD), using a reference signal synthesized from an initial IF estimate. Theoretical and practical aspects of performance are discussed, and the performance is compared with that of other methods

@@ -1,0 +1,1 @@
+This paper examines the relationship between the competitiveness of contract bids entered by individual contractors and the size (value) and type of the contracts involved.  The development of a competitive index is described which, when combined with a quadratic form of curvilinear regression analysis, provides results similar to previous work in the field.

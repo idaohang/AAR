@@ -1,0 +1,1 @@
+Efficient filtering of sigma-delta bit-streams using a finite-impulse response (FIR)-like digital filter is presented. The filter combines a lowpass sigma-delta modulator system and a ternary FIR filter. Unlike conventional FIR filters, the combination of the two components allows a bit stream to be filtered, with the output being retained in single-bit format.

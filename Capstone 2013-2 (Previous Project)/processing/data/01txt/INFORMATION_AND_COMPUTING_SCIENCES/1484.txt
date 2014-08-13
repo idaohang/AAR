@@ -1,0 +1,1 @@
+Web-Enabled Electronic Business is generating massive amount of data on customer purchases, browsing patterns, usage times and preferences at an increasing rate. Data mining techniques can be applied to all the data being collected for obtaining useful information. This chapter attempts to present issues associated with data mining for web-enabled electronic-business.

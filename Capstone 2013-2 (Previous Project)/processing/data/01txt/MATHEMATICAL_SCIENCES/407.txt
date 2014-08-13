@@ -1,0 +1,1 @@
+We present a spectral representation of the mean-square solution of the fractional kinetic equation (also know as fractional diffusion equation) with random initial condition.  Gaussian and non-Gausian limiting distributions of the renormalized solution of the fractional-in-time and in-space kinetic equation are described in terms of multiple stochastic integral representations.

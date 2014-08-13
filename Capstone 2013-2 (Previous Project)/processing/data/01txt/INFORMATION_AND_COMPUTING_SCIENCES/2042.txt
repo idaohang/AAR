@@ -1,0 +1,1 @@
+This paper first explores the needs for quantitative aesthetic measures for shape and analyses previous work in this area.  We then present a general framework for constructing shape aesthetic measures, and discuss how they could be used to enhance computer-supported systems for design for aesthetics.

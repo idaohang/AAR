@@ -1,0 +1,1 @@
+A class of simple delay systems, described by a first-order, autonomous, differential equation with a time delay, is shown in this paper to be able to simulate or produce continuous-time chaos. A set of conditions is postulated for such systems to behave chaotically. A sinusoidal delay function is given as an example to illustrate the system.

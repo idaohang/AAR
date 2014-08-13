@@ -1,0 +1,24 @@
+Using the ARMSystem
+
+In order to extract rules from a dataset there are several things to ensure.
+
+1. Must load the dataset first (build the records into memory), then extract frequent itemsets, then the closed itemsets and then the rules. If you run the system from the batch/script file then this happens automatically. If you use the GUI then you will need to click the appropriate button for each step.
+2. The dataset format must be followed.
+3. There are two files: '.data' and '.names', must have these extensions (nothing else after).
+4. The 'names' file contains a list of the attribute names (can be a string or number etc) followed by the colon character ':' a tab character and then '0,1' (zero,one). These names must be in the order that will match with their entry in the .data file.
+
+Example:
+|
+| These lines are comment lines and are ignored by the ARMSystem. You can place coments on any line that starts with a '|'. Can have a s many of these comment lines as desired.
+|
+
+cap-shape_b:	0,1
+cap-shape_c:	0,1
+cap-shape_x:	0,1
+
+These three lines are attributes in the dataset. The first attribute in the dataset is called 'cap-shape_b'. The colon ':' indicates the end of the attribute name. The 0,1 indicates that the values that this attribute can have is 0 or 1. Only these two values are allowed as the system is binary.
+
+5. The 'data' file contains the transactions. Each row is a transaction. Each attribute is represented by either a 0 or 1 and attributes are separated from each other with a comma ',' with each transaction finishing with a full stop '.'.
+6. Every attribute is present in every transactions (hence every row will be exactly the same length.
+7. The first entry in each row corresponds to the first attribute name in the names file. In the above example the first 'column' or entry in each row would be for 'cap-shape_b' with the second being for 'cap-shape_c' etc.
+8. Important!!! The '.names' and '.data' files must be in the same directory together!!!

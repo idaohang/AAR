@@ -1,0 +1,1 @@
+This paper discusses the development of a model to compare corridor energy consumption of road and rail options. The key parameters influencing the energy estimation and comparison procedure are identified and a methodology to compare door to door freight movement is provided.

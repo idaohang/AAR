@@ -1,0 +1,1 @@
+A multivariate approach to optimal bidding strategy is presented.  An optimal formulation is derived and a method of parameter estimation proposed.

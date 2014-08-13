@@ -1,0 +1,1 @@
+This paper introduces a bandpass sigma-delta converter which incorporates bandpass sampling, and which can therefore be clocked at frequencies well below the centre frequency of the input. The device is very efficient in terms of the hardware required. A concise theory of the device is given, and simulations are presented to confirm the theory

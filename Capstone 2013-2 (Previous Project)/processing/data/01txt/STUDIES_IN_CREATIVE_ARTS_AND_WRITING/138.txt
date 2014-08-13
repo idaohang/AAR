@@ -1,0 +1,1 @@
+The Australasian computer music community has both a history and significant current activity in digital instrument building. In this paper I report on digital instrument builders in Australia and New Zealand, I provide an overview of software and  hardware development up to this date, and I identify themes and trends that characterise  Australasian digital instrument building.

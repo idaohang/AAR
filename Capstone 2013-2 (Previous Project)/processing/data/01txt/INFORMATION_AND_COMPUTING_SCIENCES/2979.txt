@@ -1,0 +1,1 @@
+This position paper envisions the emergence of a new generation of service-oriented software, namely Web Service Ecosystems, and how these systems will support large-scale collaborative business processes. The paper reviews early manifestations of these systems and identifies challenges that will need to be addressed on the road to this vision.
