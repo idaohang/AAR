@@ -13,15 +13,14 @@ import java.sql.SQLException;
  * @author Jordan
  */
 public class CreateTagsDocuments {
-
     // private variables
     private static final CapstoneDBConnection con = new CapstoneDBConnection(); // db connection
     private static ResultSet userIds; // all user IDs   
 
     /**
-     * @param args the command line arguments
+     * Export all the tag documents based upon information in the db
      */
-    public static void main(String[] args) {
+    public static void exportDocuments() {
         getUserIds();
         createDocuments();
         con.shutDown();

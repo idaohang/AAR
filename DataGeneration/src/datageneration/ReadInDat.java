@@ -20,15 +20,15 @@ public class ReadInDat {
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
 
     /**
-     * @param args the command line arguments
+     * Read in an array of .dat files and close connection to db when done
+     * 
+     * @param files all the files to be read in as Strings
      */
-    public static void main(String[] args) {
-        // Create the database and table(s)
-        con.createDatabase();
-
+    public static void importTagData(String[] files) {        
         // Read and insert the data into the database
-        readData("user_taggedmovies.dat");
-        readData("tags.dat");
+        for (String thisFile : files) {
+            readData(thisFile);
+        }
 
         // shut down connection
         con.shutDown();
