@@ -18,10 +18,10 @@ public class CreateTagsDocuments {
 
     private static final CapstoneDBConnection con = new CapstoneDBConnection(); // db connection
     private static ResultSet userIds; // all user IDs
-    private static int totalUsers = 0,
-                       totalTags = 0,
-                       maxTags = 0,
-                       minTags = Integer.MAX_VALUE; // default to max value
+    private static double totalUsers = 0, // doubles used to enable arithemetic
+                          totalTags = 0,
+                          maxTags = 0,
+                          minTags = Double.MAX_VALUE; // default to max value
 
     /**
      * Export all the tag documents based upon information in the db
@@ -176,10 +176,10 @@ public class CreateTagsDocuments {
             writer = new PrintWriter(metricsDocument);
 
             // write out metrics
-            writer.println("Total Users: " + totalUsers);
-            writer.println("Total Tags: " + totalTags);
-            writer.println("Max Tags: " + maxTags);
-            writer.println("Min Tags: " + minTags);
+            writer.println("Total Users: " + (int)Math.round(totalUsers));
+            writer.println("Total Tags: " + (int)Math.round(totalTags));
+            writer.println("Max Tags: " + (int)Math.round(maxTags));
+            writer.println("Min Tags: " + (int)Math.round(minTags));
             writer.println("Average (Mean) Tags: " + (totalTags/totalUsers));
 
             writer.close(); // close writer
