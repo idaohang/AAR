@@ -25,7 +25,7 @@ public class DataGeneration {
      */
     public static void main(String[] args) {
         // exactly one argument required for this program to run
-        if (args.length == 0) {
+        if (args.length == 1) {
             // check if database needs to be filled
             if (!(args[0].equals("dbFull"))) {
 

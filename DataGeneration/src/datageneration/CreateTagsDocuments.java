@@ -13,9 +13,15 @@ import java.sql.SQLException;
  * @author Jordan
  */
 public class CreateTagsDocuments {
+
     // private variables
+
     private static final CapstoneDBConnection con = new CapstoneDBConnection(); // db connection
-    private static ResultSet userIds; // all user IDs   
+    private static ResultSet userIds; // all user IDs
+    private static int totalUsers = 0,
+                       totalTags = 0,
+                       maxTags = 0,
+                       minTags = Integer.MAX_VALUE; // default to max value
 
     /**
      * Export all the tag documents based upon information in the db
@@ -23,6 +29,7 @@ public class CreateTagsDocuments {
     public static void exportDocuments() {
         getUserIds();
         createDocuments();
+        createMetricsDocument();
         con.shutDown();
     }
 
@@ -52,6 +59,7 @@ public class CreateTagsDocuments {
         createDirectory();
 
         try {
+            // create user documents
             while (userIds.next()) {
                 int currentUserId = userIds.getInt("USER_ID");
                 createUserDocument(currentUserId, getUserTags(currentUserId));
@@ -103,6 +111,7 @@ public class CreateTagsDocuments {
         try {
             PrintWriter writer;
             File userDocument = new File("userTags/" + userId + ".dat"); // user file
+            int tagCounter = 0; // total tags this user has used
 
             // create file for user
             userDocument.createNewFile();
@@ -111,12 +120,73 @@ public class CreateTagsDocuments {
             // write each tag to file, with one tag per line
             while (userTags.next()) {
                 writer.println(userTags.getString("TAG_VAL"));
+
+                // increment counters
+                tagCounter++;
+                totalTags++;
             }
 
-            writer.close(); // close write
+            writer.close(); // close writer
+
+            // check if this user has the most or least tags
+            if (tagCounter > maxTags) {
+                maxTags = tagCounter;
+            } else if (tagCounter < minTags) {
+                minTags = tagCounter;
+            }
 
         } catch (IOException | SQLException ex) {
             ex.printStackTrace();
         }
     }
+
+    /**
+     * Counts the total number of users
+     */
+    private static void countUsers() {
+        try {
+            PreparedStatement prepStatement; // prepared statement to collect user tag
+            ResultSet result; // the result of the query
+
+            // Prepared statement for counting users
+            prepStatement = con.getConnection().prepareStatement(
+                    "SELECT COUNT(DISTINCT USER_ID) FROM capstone.movie_tags");
+
+            result = prepStatement.executeQuery();
+            result.first();
+            totalUsers = result.getInt("COUNT(DISTINCT USER_ID)");
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates a document containing some metrics relating to user tags
+     */
+    private static void createMetricsDocument() {
+        countUsers();
+        
+        try {
+            PrintWriter writer;
+            File metricsDocument = new File("userTags/metrics.dat");
+
+            // create file for user
+            metricsDocument.createNewFile();
+            writer = new PrintWriter(metricsDocument);
+
+            // write out metrics
+            writer.println("Total Users: " + totalUsers);
+            writer.println("Total Tags: " + totalTags);
+            writer.println("Max Tags: " + maxTags);
+            writer.println("Min Tags: " + minTags);
+            writer.println("Average (Mean) Tags: " + (totalTags/totalUsers));
+
+            writer.close(); // close writer
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
 }
