@@ -2,7 +2,7 @@
 DataGeneration/userTags/
 
 # Ignore build output
-DateGeneration/build/
+DataGeneration/build/
 
 # Did not ignore dist/ because includes MySQLConnector /J
 
