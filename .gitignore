@@ -1,0 +1,10 @@
+# Ignore generated text files
+DataGeneration/userTags/
+
+# Ignore build output
+DateGeneration/build/
+
+# Did not ignore dist/ because includes MySQLConnector /J
+
+# Ignore some NetBeans files
+DataGeneration/nbproject/private/
