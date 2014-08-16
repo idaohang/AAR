@@ -16,15 +16,16 @@ import java.sql.*;
  * @author Clarky
  */
 public class ReadInDat {
+
     // connection to the database
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
 
     /**
      * Read in an array of .dat files and close connection to db when done
-     * 
+     *
      * @param files all the files to be read in as Strings
      */
-    public static void importTagData(String[] files) {        
+    public static void importTagData(String[] files) {
         // Read and insert the data into the database
         for (String thisFile : files) {
             readData(thisFile);
@@ -88,7 +89,24 @@ public class ReadInDat {
                         prepStatement.setString(2, parts[1]);
                         prepStatement.addBatch();
                     }
+                    break;
 
+                case "movie_genres.dat":
+                    // Prepared statement for movie genres
+                    prepStatement = con.getConnection().prepareStatement("INSERT INTO "
+                            + "capstone.movie_genres(MOVIE_ID, GENRE_VAL) VALUES (?, ?)");
+
+                    // Jump to the second line, skipping over the column names
+                    line = reader.readLine();
+
+                    // Read the file line-by-line, 
+                    // creating statements and adding to a batch insertion command
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split("\t");
+                        prepStatement.setString(1, parts[0]);
+                        prepStatement.setString(2, parts[1]);
+                        prepStatement.addBatch();
+                    }
                     break;
             }
 

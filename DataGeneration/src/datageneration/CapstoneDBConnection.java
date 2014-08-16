@@ -15,6 +15,7 @@ import java.sql.Statement;
  * @author Jordan & Clarky
  */
 public class CapstoneDBConnection {
+
     // private fields
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/";
@@ -66,19 +67,24 @@ public class CapstoneDBConnection {
             sql = "CREATE TABLE capstone.tags "
                     + "(TAG_ID INTEGER NOT NULL, "
                     + "TAG_VAL VARCHAR(100) NOT NULL, "
-                    + "PRIMARY KEY(TAG_ID))";
+                    + "PRIMARY KEY(TAG_ID));";
             statement.executeUpdate(sql);
 
-            statement = con.createStatement();
             sql = "CREATE TABLE capstone.movie_tags "
                     + "(USER_ID INTEGER NOT NULL, "
                     + "MOVIE_ID INTEGER NOT NULL, "
                     + "TAG_ID INTEGER NOT NULL, "
-                    + "PRIMARY KEY(USER_ID, MOVIE_ID, TAG_ID))";
+                    + "PRIMARY KEY(USER_ID, MOVIE_ID, TAG_ID));";
+            statement.executeUpdate(sql);
+
+            sql = "CREATE TABLE capstone.movie_genres"
+                    + "(MOVIE_ID INTEGER NOT NULL,"
+                    + "GENRE_VAL VARCHAR(100) NOT NULL,"
+                    + "PRIMARY KEY (MOVIE_ID, GENRE_VAL));";
             statement.executeUpdate(sql);
 
             statement.close();
-            
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

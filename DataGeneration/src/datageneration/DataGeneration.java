@@ -11,7 +11,7 @@ public class DataGeneration {
 
     // private variables
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
-    private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat"};
+    private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat", "movie_genres.dat"};
 
     /**
      * Main method with a maximum of 1 argument, argument represents status of db
