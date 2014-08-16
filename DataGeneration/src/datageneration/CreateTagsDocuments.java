@@ -84,7 +84,7 @@ public class CreateTagsDocuments extends CreateDocuments {
         // Calculate and store the total number of users across the system
         totalUsers = countUsers();
 
-        File metricsDocument = new File("userCats/metrics.dat");
+        File metricsDocument = new File("userTags/metrics.dat");
 
         // Create file for the metrics
         metricsDocument.createNewFile();

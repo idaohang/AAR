@@ -1,0 +1,1 @@
+java -jar dist/DataGeneration.jar tag noDb
