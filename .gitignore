@@ -1,5 +1,6 @@
 # Ignore generated text files
 DataGeneration/userTags/
+DataGeneration/userCats/
 
 # Ignore build output
 DataGeneration/build/
@@ -8,3 +9,4 @@ DataGeneration/build/
 
 # Ignore some NetBeans files
 DataGeneration/nbproject/private/
+DataGeneration/dist/README.TXT

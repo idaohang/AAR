@@ -13,16 +13,15 @@ import java.sql.*;
 /**
  * Prepare supplied dataset for processing.
  *
- * @author Clarky
+ * @author Jordan & Michael
  */
 public class ReadInDat {
 
-    // connection to the database
+    // Connection to the database
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
 
     /**
      * Read in an array of .dat files and close connection to db when done
-     *
      * @param files all the files to be read in as Strings
      */
     public static void importTagData(String[] files) {
@@ -37,19 +36,24 @@ public class ReadInDat {
 
     /**
      * Read in data from file, split on tab character into array and insert required columns only
-     *
      * @param location The location of the file to be read
      */
     public static void readData(String location) {
-        // private variables
-        String line; // Used to represent each line of the file as it is read
+        
+        // String to represent each line of the file as it is read
+        String line;
+        
+        // PreparedStatement to pass query string to the database
         PreparedStatement prepStatement = null;
+        
+        // BufferedReader to parse over file text
         BufferedReader reader;
 
         try {
-            // set up file reader
+            // Set up file reader
             reader = new BufferedReader(new FileReader(location));
-
+            
+            // Depending on the provided name and path of the file, read differently
             switch (location) {
                 case "user_taggedmovies.dat":
 

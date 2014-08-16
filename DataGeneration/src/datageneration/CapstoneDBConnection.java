@@ -11,12 +11,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- *
- * @author Jordan & Clarky
+ * Create and maintain a connection with the database server
+ * 
+ * @author Jordan & Michael
  */
 public class CapstoneDBConnection {
-
-    // private fields
+    
+    // Connection strings
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/";
     private static final String USER = "root";
