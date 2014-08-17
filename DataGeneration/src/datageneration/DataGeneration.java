@@ -83,5 +83,16 @@ public class DataGeneration {
 
             con.shutDown();
         }
+        
+        // testing
+        if (args.length == 1) {
+            if ("testMerge".equals(args[0])) {
+                System.out.println("Merging documents...");
+                String [] abc = {"userTags", "userCats"};
+                MergeDocuments md = new MergeDocuments("test", abc);
+                System.out.println("DONE\n");
+            }
+        }
+        
     }
 }
