@@ -14,16 +14,27 @@ public class DataGeneration {
 
     // private variables
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
-    private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat", "movie_genres.dat"};
+    private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat", 
+                                              "movie_genres.dat"};
     private static String dBScope, dBStatus;
 
     /**
-     * Main method with a maximum of 1 argument, argument represents status of db
+     * Main method with of 2 arguments, 
+     * arguments represents status of db of which user profile/s to generate
      *
-     * Arguments: noDb - no db has been created dbEmpty - db already exists but is empty dbFull - db
-     * exists and is already filled with data
+     * Argument 1 - scope: 
+     * cat - generate cat profile
+     * tag - generate tag profile
+     * all - generate profile encompassing all data in other profiles
+     * 
+     * Argument 2 - status:
+     * noDb - no db has been created 
+     * dbEmpty - db already exists but is empty 
+     * dbFull - db exists and is already filled with data
      *
      * @param args the command line arguments
+     * @throws java.io.IOException
+     * @throws java.sql.SQLException
      */
     public static void main(String[] args) throws IOException, SQLException {
 
@@ -59,10 +70,13 @@ public class DataGeneration {
             System.out.println("Exporting documents...");
             
             // Create a Category or Tag Document object depending on the scope of the operation
-            if (dBScope.equals("cat")) {
-                CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope);
-            } else if (dBScope.equals("tag")) {
-                CreateTagsDocuments td = new CreateTagsDocuments(dBScope);
+            switch (dBScope) {
+                case "cat":
+                    CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope);
+                    break;
+                case "tag":
+                    CreateTagsDocuments td = new CreateTagsDocuments(dBScope);
+                    break;
             }
             
             System.out.println("DONE\n");
