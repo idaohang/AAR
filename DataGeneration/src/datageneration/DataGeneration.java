@@ -26,25 +26,18 @@ public class DataGeneration {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, SQLException {
-        
+
         // This program accepts exactly two arguments
         if (args.length == 2) {
-            
+
             // First argument is the scope of the database process 
             // {Tags or Categories}
             dBScope = args[0];
-            
+
             // Second argument is the status of the database prior to the process 
             // {No Database, Empty Database or Fully Populated Database}
             dBStatus = args[1];
-            
-            // Create a Category or Tag Document object depending on the scope of the operation
-            if (dBScope.equals("cat")) {
-                CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope);
-            } else if (dBScope.equals("tag")) {
-                CreateTagsDocuments td = new CreateTagsDocuments(dBScope);
-            }
-            
+
             // Only do the required steps depending on the parameterised status of the database
             if (!(dBStatus.equals("dbFull"))) {
 
@@ -64,6 +57,14 @@ public class DataGeneration {
 
             // database is filled with tag data -> export documents
             System.out.println("Exporting documents...");
+            
+            // Create a Category or Tag Document object depending on the scope of the operation
+            if (dBScope.equals("cat")) {
+                CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope);
+            } else if (dBScope.equals("tag")) {
+                CreateTagsDocuments td = new CreateTagsDocuments(dBScope);
+            }
+            
             System.out.println("DONE\n");
 
             con.shutDown();

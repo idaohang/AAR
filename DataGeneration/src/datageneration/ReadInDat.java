@@ -68,9 +68,9 @@ public class ReadInDat {
                     // creating statements and adding to a batch insertion command
                     while ((line = reader.readLine()) != null) {
                         String[] parts = line.split("\t");
-                        prepStatement.setString(1, parts[0]);
-                        prepStatement.setString(2, parts[1]);
-                        prepStatement.setString(3, parts[2]);
+                        prepStatement.setString(1, normaliseStrings(parts[0]));
+                        prepStatement.setString(2, normaliseStrings(parts[1]));
+                        prepStatement.setString(3, normaliseStrings(parts[2]));
                         prepStatement.addBatch();
                     }
 
@@ -89,8 +89,8 @@ public class ReadInDat {
                     // creating statements and adding to a batch insertion command
                     while ((line = reader.readLine()) != null) {
                         String[] parts = line.split("\t");
-                        prepStatement.setString(1, parts[0]);
-                        prepStatement.setString(2, parts[1]);
+                        prepStatement.setString(1, normaliseStrings(parts[0]));
+                        prepStatement.setString(2, normaliseStrings(parts[1]));
                         prepStatement.addBatch();
                     }
                     break;
@@ -107,8 +107,8 @@ public class ReadInDat {
                     // creating statements and adding to a batch insertion command
                     while ((line = reader.readLine()) != null) {
                         String[] parts = line.split("\t");
-                        prepStatement.setString(1, parts[0]);
-                        prepStatement.setString(2, parts[1]);
+                        prepStatement.setString(1, normaliseStrings(parts[0]));
+                        prepStatement.setString(2, normaliseStrings(parts[1]));
                         prepStatement.addBatch();
                     }
                     break;
@@ -121,5 +121,23 @@ public class ReadInDat {
             ex.printStackTrace();
         }
     }
-
+    
+    /**
+     * Format strings as required by Mallet. 
+     * @param input Original string
+     * @return Correctly formatted string
+     */
+    private static String normaliseStrings(String input) {
+        
+        // Capitalise first letter
+        String output = input.substring(0, 1).toUpperCase() + input.substring(1);
+        
+        // Remove all spaces
+        output = output.replaceAll("\\s", "");
+        
+        // Remove all other non-word character (punctuation etc.)
+        output = output.replaceAll("\\W", "");
+        
+        return output;
+    }
 }
