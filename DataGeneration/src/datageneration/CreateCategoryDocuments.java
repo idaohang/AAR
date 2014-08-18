@@ -28,24 +28,24 @@ public class CreateCategoryDocuments extends CreateDocuments {
             minCats = Double.MAX_VALUE;
 
     // Constructor; only calls superconstructor
-    public CreateCategoryDocuments(String target) throws IOException, SQLException {
-        super(target);
+    public CreateCategoryDocuments(String target, CapstoneDBConnection con) throws IOException, SQLException {
+        super(target, con);
     }
 
     @Override
     ResultSet getUserArtifacts(int uID) throws SQLException {
-        
+
         // Prepared statement to collect user tags
         PreparedStatement prepStatement;
 
         // SQL statement for collection of user tags, in random order
-        prepStatement = con.getConnection().prepareStatement(
+        prepStatement = getDocumentsConnection().getConnection().prepareStatement(
                 "SELECT GENRE_VAL FROM capstone.movie_genres "
                 + "INNER JOIN capstone.movie_tags "
                 + "ON capstone.movie_genres.MOVIE_ID = capstone.movie_tags.MOVIE_ID "
                 + "WHERE USER_ID = " + uID
                 + " ORDER BY rand()");
-        
+
         // Execute query and return results
         return prepStatement.executeQuery();
     }
@@ -53,10 +53,10 @@ public class CreateCategoryDocuments extends CreateDocuments {
     @Override
     void createUserDocument(int uID, ResultSet result) throws IOException, SQLException {
         PrintWriter writer;
-        
+
         // Set path and name of new file
         File userDocument = new File("userCats/" + uID + ".dat");
-        
+
         // Total categories viewed by this user 
         int catCounter = 0;
 
@@ -72,7 +72,7 @@ public class CreateCategoryDocuments extends CreateDocuments {
             catCounter++;
             totalCats++;
         }
-        
+
         // Close writer
         writer.close();
 
@@ -86,10 +86,9 @@ public class CreateCategoryDocuments extends CreateDocuments {
 
     @Override
     void createMetricsDocument() throws FileNotFoundException, IOException, SQLException {
-        
         // Calculate and store the total number of users across the system
         totalUsers = countUsers();
-        
+
         File metricsDocument = new File("userCats/metrics.dat");
 
         // Create file for the metrics

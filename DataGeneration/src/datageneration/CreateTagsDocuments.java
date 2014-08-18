@@ -22,18 +22,17 @@ public class CreateTagsDocuments extends CreateDocuments {
             minTags = Double.MAX_VALUE;
 
     // Constructor; only calls superconstructor
-    CreateTagsDocuments(String target) throws IOException, SQLException {
-        super(target);
+    CreateTagsDocuments(String target, CapstoneDBConnection con) throws IOException, SQLException {
+        super(target, con);
     }
 
     @Override
     ResultSet getUserArtifacts(int currentUserId) throws SQLException {
-
         // Prepared statement to collect user tags
         PreparedStatement prepStatement;
 
         // SQL statement for collection of user tags, in random order
-        prepStatement = con.getConnection().prepareStatement(
+        prepStatement = getDocumentsConnection().getConnection().prepareStatement(
                 "SELECT TAG_VAL FROM capstone.movie_tags "
                 + "INNER JOIN capstone.tags "
                 + "ON capstone.movie_tags.TAG_ID = capstone.tags.TAG_ID "
@@ -80,7 +79,6 @@ public class CreateTagsDocuments extends CreateDocuments {
 
     @Override
     void createMetricsDocument() throws FileNotFoundException, IOException, SQLException {
-
         // Calculate and store the total number of users across the system
         totalUsers = countUsers();
 

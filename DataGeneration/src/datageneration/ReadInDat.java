@@ -16,23 +16,22 @@ import java.sql.*;
  * @author Jordan & Michael
  */
 public class ReadInDat {
-
     // Connection to the database
-    private static final CapstoneDBConnection con = new CapstoneDBConnection();
+    private CapstoneDBConnection con;
 
     /**
      * Read in an array of .dat files and close connection to db when done
      *
      * @param files all the files to be read in as Strings
+     * @param con connection to the db
      */
-    public static void importTagData(String[] files) {
+    public ReadInDat(String[] files, CapstoneDBConnection con) {
+        this.con = con;
+
         // Read and insert the data into the database
         for (String thisFile : files) {
             readData(thisFile);
         }
-
-        // shut down connection
-        con.shutDown();
     }
 
     /**
@@ -40,7 +39,7 @@ public class ReadInDat {
      *
      * @param location The location of the file to be read
      */
-    public static void readData(String location) {
+    public void readData(String location) {
         try {
             // PreparedStatement to pass query string to the database
             PreparedStatement prepStatement = null;
@@ -87,7 +86,7 @@ public class ReadInDat {
      * @param prepStatement the prepared statement object
      * @return
      */
-    private static PreparedStatement setupPreparedStatement(String query, String location,
+    private PreparedStatement setupPreparedStatement(String query, String location,
             PreparedStatement prepStatement) {
         try {
             // String to represent each line of the file as it is read

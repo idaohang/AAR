@@ -16,7 +16,10 @@ public class DataGeneration {
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
     private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat", 
                                               "movie_genres.dat"};
+    private static final String[] foldersToMerge = {"userTags", "userCats"};
+    private static final String nameOfMergedFolder = "mergedTagCatProfile";
     private static String dBScope, dBStatus;
+    
 
     /**
      * Main method with of 2 arguments, 
@@ -62,37 +65,32 @@ public class DataGeneration {
 
                 // database and tables exist -> read in required files
                 System.out.println("Filling database...");
-                ReadInDat.importTagData(datFiles);
+                ReadInDat rd = new ReadInDat(datFiles, con);
                 System.out.println("DONE\n");
             }
 
             // database is filled with tag data -> export documents
             System.out.println("Exporting documents...");
             
-            // Create a Category or Tag Document object depending on the scope of the operation
-            switch (dBScope) {
-                case "cat":
-                    CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope);
-                    break;
-                case "tag":
-                    CreateTagsDocuments td = new CreateTagsDocuments(dBScope);
-                    break;
+            // Create a Category or Tag Document object/s depending on the scope of the operation
+            if (dBScope.equals("cat") || dBScope.equals("all")) {
+                CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope, con);
+            }
+            
+            if (dBScope.equals("tag") || dBScope.equals("all")) {
+                CreateTagsDocuments td = new CreateTagsDocuments(dBScope, con);
             }
             
             System.out.println("DONE\n");
-
-            con.shutDown();
-        }
-        
-        // testing
-        if (args.length == 1) {
-            if ("testMerge".equals(args[0])) {
+            
+            // merge documents if required
+             if (dBScope.equals("all")) {
                 System.out.println("Merging documents...");
-                String [] abc = {"userTags", "userCats"};
-                MergeDocuments md = new MergeDocuments("test", abc);
+                MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge);
                 System.out.println("DONE\n");
-            }
-        }
-        
+             }
+            
+            con.shutDown();
+        }        
     }
 }

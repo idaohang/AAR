@@ -1,6 +1,7 @@
 # Ignore generated text files
 DataGeneration/userTags/
 DataGeneration/userCats/
+DataGeneration/mergedTagCatProfile/
 
 # Ignore build output
 DataGeneration/build/

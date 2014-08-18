@@ -1,0 +1,1 @@
+java -jar dist/DataGeneration.jar all dbEmpty

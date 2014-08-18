@@ -1,6 +1,5 @@
 package datageneration;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,8 +7,8 @@ import java.sql.SQLException;
 /**
  * Abstract class templates each of the different forms of data the system will extract from the
  * database.
- *
- * @author Clarky
+ * 
+* @author Clarky
  */
 public abstract class CreateDocuments extends Documents {
 
@@ -18,11 +17,12 @@ public abstract class CreateDocuments extends Documents {
      * method (calling methods in order) than a typical object constructor which initialises fields.
      *
      * @param target What type of documents need to be created
+     * @param con Connection to the db
      * @throws IOException
      * @throws SQLException
      */
-    public CreateDocuments(String target) throws IOException, SQLException {
-        super(target);
+    public CreateDocuments(String target, CapstoneDBConnection con) throws IOException, SQLException {
+        super(target, con);
     }
 
     /**
@@ -36,6 +36,9 @@ public abstract class CreateDocuments extends Documents {
     protected void makeDocuments(String target) throws IOException, SQLException {
         // Create the directory in which to place the files
         createDirectory(target);
+
+        // create local copy of user ids
+        ResultSet userIds = getUserIds();
 
         // Iterate over all user IDs and generate their document
         while (userIds.next()) {
@@ -52,14 +55,12 @@ public abstract class CreateDocuments extends Documents {
     @Override
     protected void createDirectory(String target) {
         // Depending on the target data, name the folder differently
-        switch (target) {
-            case "tag":
-                super.createDirectory("userTags");
-                break;
+            if (target.equals("cat") || target.equals("all")) {
+            super.createDirectory("userTags");
+        }
 
-            case "cat":
-                super.createDirectory("userCats");
-                break;
+        if (target.equals("tag") || target.equals("all")) {
+            super.createDirectory("userCats");
         }
     }
 
@@ -81,5 +82,4 @@ public abstract class CreateDocuments extends Documents {
      * @throws SQLException
      */
     abstract void createUserDocument(int uID, ResultSet result) throws IOException, SQLException;
-
 }

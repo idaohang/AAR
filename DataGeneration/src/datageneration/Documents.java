@@ -1,6 +1,5 @@
 package datageneration;
 
-import static datageneration.CreateDocuments.con;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,66 +10,64 @@ import java.sql.SQLException;
 /**
  * Abstract class that handles user documents for profiles and topic models
  * 
- * @author Jordan
+* @author Jordan
  */
 public abstract class Documents {
-        
+    
     // Instance connection to the database
-    static final CapstoneDBConnection con = new CapstoneDBConnection();
-    
+    private CapstoneDBConnection con;
+
     // An SQL resultset of unique IDs of each user
-    static ResultSet userIds;
-    
+    private static ResultSet userIds;
+
     /**
      * Creates documents for each user and generates metrics
-     * 
-      * @param target What type of documents need to be created
+     *
+     * @param target What type of documents need to be created
      */
-    public Documents(String target) throws IOException, SQLException {
-        
+    public Documents(String target, CapstoneDBConnection con) throws IOException, SQLException {
+        this.con = con; // set connection field
+
         // Query and store user IDs
-        getUserIds();
-        
+        collectUserIds();
+
         // Generate a document for each user from the targeted dataset
         makeDocuments(target);
-        
+
         // Analyse the returned data and calculate simple metrics
         createMetricsDocument();
-        
-        // Close the connection to the database
-        con.shutDown();
     }
-    
-        /**
+
+    /**
      * Counts the number of users found in the movie_tags table
+     *
      * @return The number of users found
      * @throws SQLException
      */
-    int countUsers() throws SQLException {
-        
+    protected int countUsers() throws SQLException {
         // Prepared statement for querying database
         PreparedStatement prepStatement;
-        
+
         // Store the results of the query
         ResultSet result;
-        
+
         // SQL query to count the number of users
         prepStatement = con.getConnection().prepareStatement(
                 "SELECT COUNT(DISTINCT USER_ID) FROM capstone.movie_tags");
-        
+
         // Execute the query and store the results
         result = prepStatement.executeQuery();
-        
+
         // Ensure resultset is set to the first record
         result.first();
-        
+
         // Return the number of users
         return result.getInt("COUNT(DISTINCT USER_ID)");
     }
-        
+
     /**
      * Creates a directory
-     * 
+     *
      * @param directoryName the name of the directory
      */
     protected void createDirectory(String directoryName) {
@@ -81,42 +78,59 @@ public abstract class Documents {
             directory.mkdir();
         }
     }
-    
-    
+
     /**
-     * Collects all the user IDs and stores them in the userIds resultset
+     * Collects all the user IDs and stores them in the userIds ResultSet
      */
-    protected void getUserIds() {
+    protected void collectUserIds() {
         // Prepared statement to query for user IDs
         PreparedStatement prepStatement;
 
+        // get all the unique user ids
         try {
             prepStatement = con.getConnection().prepareStatement(
                     "SELECT DISTINCT USER_ID FROM capstone.movie_tags");
-            userIds = prepStatement.executeQuery();          
-
+            userIds = prepStatement.executeQuery();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
-    
+
+    /**
+     * Getter method for connection
+     *
+     * @return connection to the db
+     */
+    protected CapstoneDBConnection getDocumentsConnection() {
+        return con;
+    }
+
+    /**
+     * Getter method for userId
+     *
+     * @return the user IDs in a ResultSet
+     */
+    protected ResultSet getUserIds() {
+        return userIds;
+    }
+
     /**
      * Creates the documents for each user for the given target data. Each document consists of all
      * a user's artifacts in a random order.
-     * 
+     *
      * @param target The type of documents to be generated
-     * @throws IOException 
+     * @throws IOException
      */
     abstract protected void makeDocuments(String target) throws IOException, SQLException;
-    
+
     /**
-     * Generate the document for the overall metrics of the data. The metrics include:
-     * The number of users, the largest amount of data for any one user, the smallest amount of data
-     * for any one user and the average amount of data across the entire userbase.
-     * 
+     * Generate the document for the overall metrics of the data. The metrics include: The number of
+     * users, the largest amount of data for any one user, the smallest amount of data for any one
+     * user and the average amount of data across the entire userbase.
+     *
      * @throws FileNotFoundException File or filepath not found
      * @throws IOException
-     * @throws SQLException 
+     * @throws SQLException
      */
-    abstract void createMetricsDocument() throws FileNotFoundException, IOException, SQLException ;
+    abstract void createMetricsDocument() throws FileNotFoundException, IOException, SQLException;
 }
