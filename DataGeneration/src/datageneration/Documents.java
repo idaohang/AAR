@@ -120,6 +120,7 @@ public abstract class Documents {
      *
      * @param target The type of documents to be generated
      * @throws IOException
+     * @throws java.sql.SQLException
      */
     abstract protected void makeDocuments(String target) throws IOException, SQLException;
 

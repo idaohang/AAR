@@ -45,36 +45,51 @@ public class CreateTagsDocuments extends CreateDocuments {
 
     @Override
     void createUserDocument(int uID, ResultSet result) throws IOException, SQLException {
-        PrintWriter writer;
 
-        // Set path and name of file
-        File userDocument = new File("userTags/" + uID + ".dat");
+        // Go to last row of result
+        //result.last();
 
-        // Total tags this user has used
-        int tagCounter = 0;
+        // Check if the row is less than the 10th row
+        // If it is less than 10, don't generate anything
+        //if (!(result.getRow() < 5)) {
+            
+            // Reset to before the first row for iterating
+            result.beforeFirst();
+            
+            PrintWriter writer;
 
-        // Create file for user
-        userDocument.createNewFile();
-        writer = new PrintWriter(userDocument);
+            // Set path and name of file
+            File userDocument = new File("userTags/" + uID + ".dat");
 
-        // Write each tag to file, with one tag per line
-        while (result.next()) {
-            writer.println(result.getString("TAG_VAL"));
+            // Total tags this user has used
+            int tagCounter = 0;
 
-            // Increment counters
-            tagCounter++;
-            totalTags++;
-        }
+            // Create file for user
+            userDocument.createNewFile();
+            writer = new PrintWriter(userDocument);
 
-        // Close writer
-        writer.close();
+            // Write each tag to file, with one tag per line
+            while (result.next()) {
+                writer.println(result.getString("TAG_VAL"));
 
-        // Check if this user has the most or least tags, if so set the max/min counters
-        if (tagCounter > maxTags) {
-            maxTags = tagCounter;
-        } else if (tagCounter < minTags) {
-            minTags = tagCounter;
-        }
+                // Increment counters
+                tagCounter++;
+                totalTags++;
+            }
+            
+            // Increment total users counter
+            //totalUsers++;
+
+            // Close writer
+            writer.close();
+
+            // Check if this user has the most or least tags, if so set the max/min counters
+            if (tagCounter > maxTags) {
+                maxTags = tagCounter;
+            } else if (tagCounter < minTags) {
+                minTags = tagCounter;
+            }
+        //}
     }
 
     @Override

@@ -52,36 +52,51 @@ public class CreateCategoryDocuments extends CreateDocuments {
 
     @Override
     void createUserDocument(int uID, ResultSet result) throws IOException, SQLException {
-        PrintWriter writer;
 
-        // Set path and name of new file
-        File userDocument = new File("userCats/" + uID + ".dat");
+        // Go to last row of result
+        //result.last();
 
-        // Total categories viewed by this user 
-        int catCounter = 0;
+        // Check if the row is less than the 10th row
+        // If it is less than 10, don't generate anything
+        //if (!(result.getRow() < 5)) {
 
-        // Create file for user
-        userDocument.createNewFile();
-        writer = new PrintWriter(userDocument);
+            // Reset to before the first row for iterating
+            result.beforeFirst();
 
-        // Write each tag to file, with one category per line
-        while (result.next()) {
-            writer.println(result.getString("GENRE_VAL"));
+            PrintWriter writer;
 
-            // Increment counters
-            catCounter++;
-            totalCats++;
-        }
+            // Set path and name of new file
+            File userDocument = new File("userCats/" + uID + ".dat");
 
-        // Close writer
-        writer.close();
+            // Total categories viewed by this user 
+            int catCounter = 0;
 
-        // Check if this user has the most or least categories, if so set the max/min counters
-        if (catCounter > maxCats) {
-            maxCats = catCounter;
-        } else if (catCounter < minCats) {
-            minCats = catCounter;
-        }
+            // Create file for user
+            userDocument.createNewFile();
+            writer = new PrintWriter(userDocument);
+
+            // Write each tag to file, with one category per line
+            while (result.next()) {
+                writer.println(result.getString("GENRE_VAL"));
+
+                // Increment counters
+                catCounter++;
+                totalCats++;
+            }
+            
+            // Increment total users counter
+            //totalUsers++;
+
+            // Close writer
+            writer.close();
+
+            // Check if this user has the most or least categories, if so set the max/min counters
+            if (catCounter > maxCats) {
+                maxCats = catCounter;
+            } else if (catCounter < minCats) {
+                minCats = catCounter;
+            }
+        //}
     }
 
     @Override

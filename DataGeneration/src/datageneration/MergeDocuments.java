@@ -64,9 +64,6 @@ public class MergeDocuments extends Documents {
 
     @Override
     void createMetricsDocument() throws FileNotFoundException, IOException, SQLException {
-        // Calculate and store the total number of users across the system
-        totalUsers = countUsers();
-
         // initialise metric file
         File metricsDocument = new File(target + "/metrics.dat");
 
@@ -116,34 +113,42 @@ public class MergeDocuments extends Documents {
     private void createUserDocument(int userID, ArrayList<String> userData) throws IOException {
         PrintWriter writer;
         File userDocument;
-        int userDataCount = 0; // Total pieces of data for this user
+        int userDataCount = userData.size(); // Total pieces of data for this user
 
-        // Set path and name of file
-        userDocument = new File(target + "/" + userID + ".dat");
+        // If the user has more than the minimum acceptable data pieces, write their file
+        if (!(userDataCount < minIdealDataCount)) {
 
-        // Create file for user
-        userDocument.createNewFile();
-        writer = new PrintWriter(userDocument);
+            // Set path and name of file
+            userDocument = new File(target + "/" + userID + ".dat");
 
-        // Write each tag to file, with one tag per line
-        for (String dataPiece : userData) {
-            writer.println(dataPiece);
-            // Increment counters
-            userDataCount++;
-            totalDataCount++;
-        }
+            // Create file for user
+            userDocument.createNewFile();
+            writer = new PrintWriter(userDocument);
 
-        // Close writer
-        writer.close();
+            // Write each tag to file, with one tag per line
+            for (String dataPiece : userData) {
+                writer.println(dataPiece);
+                
+                // Increment counters
+                totalDataCount++;
+            }
+            
+            // Increment users counter
+            totalUsers++;
 
-        // Check if this user has the most or least data, if so set the max/min counters
-        if (userDataCount > maxDataPieces) {
-            maxDataPieces = userDataCount;
-        } else if (userDataCount < minDataPieces) {
-            minDataPieces = userDataCount;
+            // Check if this user has the most or least data, if so set the max/min counters
+            if (userDataCount > maxDataPieces) {
+                maxDataPieces = userDataCount;
+            } else if (userDataCount < minDataPieces) {
+                minDataPieces = userDataCount;
+            }
+
+            // Close writer
+            writer.close();
         }
 
         // check if this user has enough data, add to counter if necissary
+        // TODO: Remove 
         if (userDataCount < minIdealDataCount) {
             lessThanMinIdealCount++;
         }
