@@ -16,6 +16,7 @@ import java.sql.*;
  * @author Jordan & Michael
  */
 public class ReadInDat {
+
     // Connection to the database
     private CapstoneDBConnection con;
 
@@ -48,23 +49,25 @@ public class ReadInDat {
             switch (location) {
                 case "user_taggedmovies.dat":
                     prepStatement = setupPreparedStatement("INSERT INTO "
-                            + "capstone.movie_tags(USER_ID, MOVIE_ID, TAG_ID) VALUES (?, ?, ?)",
-                            location,
-                            prepStatement);
+                            + "capstone.movie_tags(USER_ID, MOVIE_ID, TAG_ID) "
+                            + "VALUES (?, ?, ?)", location, prepStatement);
                     break;
 
                 case "tags.dat":
                     prepStatement = setupPreparedStatement("INSERT INTO "
-                            + "capstone.tags(TAG_ID, TAG_VAL) VALUES (?, ?)",
-                            location,
-                            prepStatement);
+                            + "capstone.tags(TAG_ID, TAG_VAL) "
+                            + "VALUES (?, ?)", location, prepStatement);
                     break;
 
                 case "movie_genres.dat":
                     prepStatement = setupPreparedStatement("INSERT INTO "
-                            + "capstone.movie_genres(MOVIE_ID, GENRE_VAL) VALUES (?, ?)",
-                            location,
-                            prepStatement);
+                            + "capstone.movie_genres(MOVIE_ID, GENRE_VAL) "
+                            + "VALUES (?, ?)", location, prepStatement);
+                    break;
+                case "user_ratedmovies.dat":
+                    prepStatement = setupPreparedStatement("INSERT INTO "
+                            + "capstone.movie_ratings(USER_ID, MOVIE_ID, RATING_VAL) "
+                            + "VALUES (?, ?, ?)", location, prepStatement);
                     break;
             }
 
@@ -112,7 +115,7 @@ public class ReadInDat {
                 for (int i = 1; i <= columns; i++) {
                     prepStatement.setString(i, normaliseStrings(parts[i - 1]));
                 }
-
+                
                 prepStatement.addBatch();
             }
 
@@ -139,7 +142,7 @@ public class ReadInDat {
         output = output.replaceAll("\\s", "");
 
         // Remove all other non-word character (punctuation etc.)
-        output = output.replaceAll("\\W", "");
+        //output = output.replaceAll("\\W", "");
 
         return output;
     }

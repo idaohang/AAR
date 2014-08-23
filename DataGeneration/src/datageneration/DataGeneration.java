@@ -14,7 +14,7 @@ public class DataGeneration {
 
     // private variables
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
-    private static final String[] datFiles = {"user_taggedmovies.dat", "tags.dat", 
+    private static final String[] datFiles = {"user_ratedmovies.dat", "user_taggedmovies.dat", "tags.dat", 
                                               "movie_genres.dat"};
     private static final String[] foldersToMerge = {"userTags", "userCats"};
     private static final String nameOfMergedFolder = "mergedTagCatProfile";

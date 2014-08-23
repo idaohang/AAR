@@ -12,11 +12,11 @@ import java.sql.Statement;
 
 /**
  * Create and maintain a connection with the database server
- * 
+ *
  * @author Jordan & Michael
  */
 public class CapstoneDBConnection {
-    
+
     // Connection strings
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/";
@@ -82,6 +82,14 @@ public class CapstoneDBConnection {
                     + "(MOVIE_ID INTEGER NOT NULL,"
                     + "GENRE_VAL VARCHAR(100) NOT NULL,"
                     + "PRIMARY KEY (MOVIE_ID, GENRE_VAL));";
+            statement.executeUpdate(sql);
+
+            // Create the movie ratings table
+            sql = "CREATE TABLE capstone.movie_ratings"
+                    + "(USER_ID INTEGER NOT NULL,"
+                    + "MOVIE_ID INTEGER NOT NULL,"
+                    + "RATING_VAL DECIMAL(2,1) NOT NULL,"
+                    + "PRIMARY KEY (USER_ID, MOVIE_ID));";
             statement.executeUpdate(sql);
 
             statement.close();
