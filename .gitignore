@@ -11,3 +11,5 @@ DataGeneration/build/
 # Ignore some NetBeans files
 DataGeneration/nbproject/private/
 DataGeneration/dist/README.TXT
+UserBasedCF/nbproject/private/
+UserBasedCF/dist/README.TXT
