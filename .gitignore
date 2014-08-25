@@ -13,3 +13,6 @@ DataGeneration/nbproject/private/
 DataGeneration/dist/README.TXT
 UserBasedCF/nbproject/private/
 UserBasedCF/dist/README.TXT
+/ItemBasedCF/nbproject/private/
+/ItemBasedCF/build/
+/ItemBasedCF/dist/

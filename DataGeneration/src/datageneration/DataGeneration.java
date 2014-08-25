@@ -83,10 +83,15 @@ public class DataGeneration {
             
             System.out.println("DONE\n");
             
-            // merge documents if required
+            // merge documents and update ratings table if required
              if (dBScope.equals("all")) {
                 System.out.println("Merging documents...");
                 MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge);
+                System.out.println("DONE\n");
+
+                System.out.println("Creating Final Ratings Table...");
+                FinaliseMovieRatings fmr = new FinaliseMovieRatings(con);
+                fmr.createFinalRatingsTable();
                 System.out.println("DONE\n");
              }
             

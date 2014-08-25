@@ -31,6 +31,9 @@ public class MergeDocuments extends Documents {
             minDataPieces = Double.MAX_VALUE,
             minIdealDataCount = 10, // minimum required data count per user
             lessThanMinIdealCount = 0;
+    
+    // users with at least the min required data cound
+    private static ArrayList<Integer> idealUsers = new ArrayList<Integer>();
 
     /**
      * Merges some documents together into one file
@@ -81,6 +84,14 @@ public class MergeDocuments extends Documents {
     }
 
     /**
+     * Returns a list of the ideal users
+     * @return all the ideal users
+     */
+    public static ArrayList<Integer> getIdealUsers() {
+        return idealUsers;
+    }
+    
+    /**
      * Collects and returns all the relevant data for a user
      *
      * @param userId the id of the user to collect data for
@@ -110,6 +121,12 @@ public class MergeDocuments extends Documents {
         return userData;
     }
 
+    /**
+     * Create document for a user if they have enough data
+     * @param userID the id of the user to create a document for
+     * @param userData a list of the user's data
+     * @throws IOException 
+     */
     private void createUserDocument(int userID, ArrayList<String> userData) throws IOException {
         PrintWriter writer;
         File userDocument;
@@ -135,8 +152,12 @@ public class MergeDocuments extends Documents {
             
             // Increment users counter
             totalUsers++;
+            
+            // this is an ideal user, add to list
+            idealUsers.add(userID);
 
             // Check if this user has the most or least data, if so set the max/min counters
+            // TODO: Remove
             if (userDataCount > maxDataPieces) {
                 maxDataPieces = userDataCount;
             } else if (userDataCount < minDataPieces) {

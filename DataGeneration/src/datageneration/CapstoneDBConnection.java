@@ -84,8 +84,16 @@ public class CapstoneDBConnection {
                     + "PRIMARY KEY (MOVIE_ID, GENRE_VAL));";
             statement.executeUpdate(sql);
 
-            // Create the movie ratings table
+            // Create the movie ratings table (all users)
             sql = "CREATE TABLE capstone.movie_ratings"
+                    + "(USER_ID INTEGER NOT NULL,"
+                    + "MOVIE_ID INTEGER NOT NULL,"
+                    + "RATING_VAL DECIMAL(2,1) NOT NULL,"
+                    + "PRIMARY KEY (USER_ID, MOVIE_ID));";
+            statement.executeUpdate(sql);
+            
+            // Create the final movie ratings table (only for users with enough data)
+            sql = "CREATE TABLE capstone.movie_ratings_final"
                     + "(USER_ID INTEGER NOT NULL,"
                     + "MOVIE_ID INTEGER NOT NULL,"
                     + "RATING_VAL DECIMAL(2,1) NOT NULL,"
