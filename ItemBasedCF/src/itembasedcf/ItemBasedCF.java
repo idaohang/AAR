@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.Recommender;
@@ -148,9 +145,9 @@ public class ItemBasedCF {
         System.out.format("Recommendations for %d:\n", userId);
         System.out.format("\tID\tScore\n");
 
-        recs.stream().forEach((item) -> {
+       for (ScoredId item : recs) {
             System.out.format("\t%d\t%.2f\n", item.getId(), item.getScore());
-        });
+        }
     }
 
 }
