@@ -1,151 +1,95 @@
 package itembasedcf;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselineScorer;
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
-import org.grouplens.lenskit.data.sql.JDBCRatingDAOBuilder;
-import org.grouplens.lenskit.knn.NeighborhoodSize;
-import org.grouplens.lenskit.knn.item.ItemItemScorer;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 
 /**
- * Item-item Collaborative Filtering recommendation system for movies
- * 
- * Uses lenskit for CF logic:
- * https://github.com/lenskit/lenskit/wiki
- * http://lenskit.org/apidocs/
- * 
+ * Testing program for demonstrative purposes only (ie. rough).
+ * Reads in a LenskitRecommenderEngine from file and makes recommendations
+ *
  * @author Jordan
  */
 public class ItemBasedCF {
-    
+
+    // Connection settings
+    private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver",
+                                DB_URL = "jdbc:mysql://localhost:3306/",
+                                USER = "root",
+                                PASS = "password";
+    private static final Integer[] testingUsers = {127, 477}; // some testing users
+    private static final Integer totalRecommendations = 10; // recommendations to make
+    private static final String engineFileName = "engine.bin"; // file name for engine
+
     /**
      * Runs a test recommendation for a handful of users
-     * 
+     *
      * @param args the command line arguments
+     * @throws java.io.IOException
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.sql.SQLException
+     * @throws org.grouplens.lenskit.RecommenderBuildException
      */
-    public static void main(String[] args) {
-        // change these parameters to alter recommendation
-        Integer neighbourhoodSize = 30, // how many users in a neighbourhood
-                totalRecommendations = 10; // total recomendations to make
-        Integer [] testingUsers = {127, 477}; // some testing users
-        
-        LenskitConfiguration config = createConfiguration(neighbourhoodSize);
-        
-        ItemRecommender irec = createRecommender(config);
-                
-        // output recommendations
-        for (Integer user : testingUsers) {
-            makeRecommendations(user, totalRecommendations, irec);
-        }
+    public static void main(String[] args)
+            throws IOException, ClassNotFoundException, SQLException, RecommenderBuildException {
+        // private variables
+        Connection con; // connection to DB
+        LenskitRecommenderEngine engine; // engine to be read from file
+        ItemRecommender irec; // recommender for items
+        JDBCRatingDAO dao = MovieRecommenderEngine.createDAO(); // data access object
+        LenskitConfiguration dataConfig = new LenskitConfiguration(); // config for DAO free engine
 
-    }
-    
-    /**
-     * Sets up and returns a LenskitConfiguration for item-item CF
-     * @param neighbourhoodSize
-     * @return the configuration
-     */
-    private static LenskitConfiguration createConfiguration(Integer neighbourhoodSize) {
-        try {
-            LenskitConfiguration config = new LenskitConfiguration(); // config for recommender
-            Connection con; // connection to db
-            JDBCRatingDAO dao; // data access object
-            JDBCRatingDAOBuilder daoBuilder; // data builder
-            
-            // Use item-item CF to score items
-            config.bind(ItemScorer.class).to(ItemItemScorer.class);
-            
-            // Let's use personalised mean rating as the baseline/fallback predictor.
-            // 2-step process:
-            // First, use the user mean rating as the baseline scorer
-            config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
-            
-            // Second, use the item mean rating as the base for user means
-            config.bind(UserMeanBaseline.class, ItemScorer.class).
-                    to(ItemMeanRatingItemScorer.class);
-            
-            // and normalize ratings by baseline prior to computing similarities
-            config.bind(UserVectorNormalizer.class).
-                    to(BaselineSubtractingUserVectorNormalizer.class);
-            
-            // Set number of neighbours
-            config.set(NeighborhoodSize.class).to(neighbourhoodSize);
-            
-            // Build data access object (DAO) and set up columns
-            daoBuilder = JDBCRatingDAO.newBuilder();
-            
-            daoBuilder.setTableName("capstone.movie_ratings_final");
-            daoBuilder.setItemColumn("MOVIE_ID");
-            daoBuilder.setRatingColumn("RATING_VAL");
-            daoBuilder.setUserColumn("USER_ID");
-            daoBuilder.setTimestampColumn("USER_ID"); // no timestamp
-            
-            // Initialise DAO with connection
-            Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "root", "password");
-            dao = daoBuilder.build(con);
-            
-            config.addComponent(dao); // add DAO to configuration
+        // set up connection
+        Class.forName(JDBC_DRIVER);
+        con = DriverManager.getConnection(DB_URL, USER, PASS);
 
-            return config;
-            
-        } catch (ClassNotFoundException | SQLException ex) {
-            ex.printStackTrace();
-        }
-        
-        return null;       
-    }
-    
-    /**
-     * Create an item recommender using a configuration
-     * @param config the configuration to use
-     * @return an item recommender to make recommendations
-     */
-    private static ItemRecommender createRecommender(LenskitConfiguration config) {
-        // Build a recommender from the configuration
-        Recommender rec = null;
-        
+        // add DAO to config
+        dataConfig.addComponent(dao);
+
+        // read in engine, and add data config
+        engine = LenskitRecommenderEngine.newLoader()
+                                         .addConfiguration(dataConfig)
+                                         .load(new File(engineFileName));
+
         try {
-            rec = LenskitRecommender.build(config);
-        } catch (RecommenderBuildException e) {
-            throw new RuntimeException("recommender build failed", e);
+            // set up recommender using engine and DAO
+            irec = engine.createRecommender().getItemRecommender();
+
+            // output recommendations
+            for (Integer user : testingUsers) {
+                makeRecommendations(user, totalRecommendations, irec);
+            }
+
+        } finally {
+            con.close();
         }
-        
-        // We want to recommend items
-       return rec.getItemRecommender();
     }
-    
+
     /**
-     * Gets the recommendations for a user and outputs to console 
-     * 
+     * Gets the recommendations for a user and outputs to console
+     *
      * @param userId the user to recommend items to
      * @param totalRecommendations the number of recommendations to make (ie. the N in top-N)
      * @param irec the ItemRecommender that contains the configuration and data for the system
      */
-    private static void makeRecommendations(Integer userId, Integer totalRecommendations, 
+    private static void makeRecommendations(Integer userId, Integer totalRecommendations,
             ItemRecommender irec) {
         // Get top n recommendation for the user
         List<ScoredId> recs = irec.recommend(userId, totalRecommendations);
-        
+
         System.out.format("Recommendations for %d:\n", userId);
         System.out.format("\tID\tScore\n");
 
-       for (ScoredId item : recs) {
+        for (ScoredId item : recs) {
             System.out.format("\t%d\t%.2f\n", item.getId(), item.getScore());
         }
     }
