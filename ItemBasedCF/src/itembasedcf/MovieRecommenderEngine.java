@@ -1,5 +1,7 @@
 package itembasedcf;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -25,7 +27,10 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
  * @author Jordan
  */
 public class MovieRecommenderEngine {
-
+    // public constants
+    public static final String START_ENGINE_NAME = "engine-", // start of file name
+                               END_ENGINE_NAME = "neighbours.bin"; // end of file name
+    
     // Connection settings
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver",
                                 DB_URL = "jdbc:mysql://localhost:3306/",
@@ -33,6 +38,8 @@ public class MovieRecommenderEngine {
                                 PASS = "password";
 
     LenskitRecommenderEngine engine; // the actual LenskitRecommenderEngine encapsulated
+    
+    Integer neighbourhoodSize; // the size of the neghbourhood
 
     /**
      * Constructor for a MovieRecommenderEngine creates a RecommenderEngine based upon a
@@ -46,9 +53,20 @@ public class MovieRecommenderEngine {
     public MovieRecommenderEngine(Integer neighbourhoodSize)
             throws ClassNotFoundException, SQLException, RecommenderBuildException {
 
+        this.neighbourhoodSize = neighbourhoodSize;
+        
         LenskitConfiguration config = createConfiguration(neighbourhoodSize);
 
         engine = createRecommenderEngine(config);
+    }
+    
+    /**
+     * Writes this recommender engine to file
+     * 
+     * @throws java.io.IOException
+     */
+    public void writeToFile() throws IOException {
+        engine.write(new File(START_ENGINE_NAME + neighbourhoodSize + END_ENGINE_NAME));
     }
 
     /**
@@ -77,7 +95,7 @@ public class MovieRecommenderEngine {
         // Build data access object (DAO) and set up columns
         daoBuilder = JDBCRatingDAO.newBuilder();
 
-        daoBuilder.setTableName("capstone.movie_ratings_final");
+        daoBuilder.setTableName("capstone.movie_ratings_recommend");
         daoBuilder.setItemColumn("MOVIE_ID");
         daoBuilder.setRatingColumn("RATING_VAL");
         daoBuilder.setUserColumn("USER_ID");

@@ -13,4 +13,7 @@ DataGeneration/nbproject/private/
 DataGeneration/dist/README.TXT
 /ItemBasedCF/nbproject/private/
 /ItemBasedCF/dist/README.TXT
-/ItemBasedCF/engine.bin
+
+# Ignore some recommendation file
+/ItemBasedCF/*.bin
+/ItemBasedCF/metrics

@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
 /**
  * Splits ratings data into two sections for use with IR metrics (precision/recall). One set of
@@ -147,6 +146,12 @@ public class RatingsDataSplitter {
         
     }
     
+    /**
+     * Gets all users as a result set
+     * 
+     * @return all the users
+     * @throws SQLException 
+     */
     private ResultSet getUsers() throws SQLException {
         // Prepared statement to collect users
         PreparedStatement prepStatement;
