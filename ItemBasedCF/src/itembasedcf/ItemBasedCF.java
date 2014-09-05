@@ -28,7 +28,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Reads in a LenskitRecommenderEngine from file and calculates precision/recall based upon a 
  * neighbourhood size and a number of recommendations. 
  * 
- * Fir recommendations will be found for each user. These recommendations will be used to calculate 
+ * For recommendations will be found for each user. These recommendations will be used to calculate 
  * the precision and recall of each user's recommendations, as well as an average for this engine. 
  * If a LenskitRecommenderEngine for the requested neighbourhood size does not exist, then one will 
  * be created.
