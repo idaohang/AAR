@@ -17,3 +17,6 @@ DataGeneration/dist/README.TXT
 # Ignore some recommendation file
 /ItemBasedCF/*.bin
 /ItemBasedCF/metrics
+/LDA/nbproject/private/
+/LDA/build/
+/LDA/dist/
