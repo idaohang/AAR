@@ -123,15 +123,10 @@ public class MovieRecommenderEngine {
         // Use item-item CF to score items
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         
-        // let's use personalized mean rating as the baseline/fallback predictor.
-        // 2-step process:
-        // First, use the user mean rating as the baseline scorer
-        config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
+        // Set up baseline predictor
+        config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
     
-        // Second, use the item mean rating as the base for user means
-        config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
-        
-        // and normalize ratings by baseline prior to computing similarities
+        // Use the baseline for normalizing user ratings
         config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
 
         // Set number of neighbours

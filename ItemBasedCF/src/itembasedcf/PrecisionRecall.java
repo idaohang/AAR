@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package itembasedcf;
 
 import java.util.ArrayList;
@@ -109,8 +103,8 @@ public class PrecisionRecall {
     }
 
     /**
-     * Find the false negatives for a data set: items that have not been correctly recommended. 
-     * False negatives will be present in only the comparisons.
+     * Find the false negatives for a data set: items that have not been correctly recommended 
+     * (ie. missed). False negatives will be present in only the comparisons.
      * 
      * @return the count of false negative
      */

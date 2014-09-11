@@ -29,8 +29,8 @@ public class MergeDocuments extends Documents {
             totalDataCount = 0,
             maxDataPieces = 0,
             minDataPieces = Double.MAX_VALUE,
-            minIdealDataCount = 10, // minimum required data count per user
             lessThanMinIdealCount = 0;
+    private static double minIdealDataCount; // minimum required data count per user
     
     // users with at least the min required data cound
     private static ArrayList<Integer> idealUsers = new ArrayList<Integer>();
@@ -39,15 +39,18 @@ public class MergeDocuments extends Documents {
      * Merges some documents together into one file
      *
      * @param target What type of documents need to be created
-     * @param profiles
+     * @param con connection to database
+     * @param profiles which profiles to include when merging
+     * @param minIdealDataCount min ideal data count for users to be considered
      * @throws IOException
      * @throws SQLException
      */
-    public MergeDocuments(String target, CapstoneDBConnection con, String[] profiles) throws IOException, SQLException {
+    public MergeDocuments(String target, CapstoneDBConnection con, String[] profiles, 
+            double minIdealDataCount) throws IOException, SQLException {
         // set up MergeDocuments and then send to super constructor
         // call to super must be first operation called, so call a 'set up' method as a parameter
         // TODO - probably better to separate construction from functionality
-        super(setUpReturnTarget(target, profiles), con); // super hack to the rescue!!!       
+        super(setUpReturnTarget(target, profiles, minIdealDataCount), con); // super hack to the rescue!!!       
     }
 
     @Override
@@ -183,10 +186,12 @@ public class MergeDocuments extends Documents {
      * @param mergeProfiles the profiles to be merged
      * @return
      */
-    private static String setUpReturnTarget(String mergeTarget, String[] mergeProfiles) {
+    private static String setUpReturnTarget(String mergeTarget, String[] mergeProfiles, 
+            double idealDataCount) {
         // update fields, even though 'this' techinically doesn't exist yet
         target = mergeTarget;
         profiles = mergeProfiles;
+        minIdealDataCount = idealDataCount;
 
         return mergeTarget;
     }

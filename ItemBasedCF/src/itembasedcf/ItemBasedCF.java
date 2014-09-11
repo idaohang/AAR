@@ -32,6 +32,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * the precision and recall of each user's recommendations, as well as an average for this engine. 
  * If a LenskitRecommenderEngine for the requested neighbourhood size does not exist, then one will 
  * be created.
+ * 
+ * A number of different recommendation engines can be produced and evaluated by separating the 
+ * neighbourhood size and total recommendations input with spaces when run 
+ * (eg. Neighbourhood Size: 10 20 30 40)
  *
  * @author Jordan
  */
@@ -43,10 +47,18 @@ public class ItemBasedCF {
                                 USER = "root",
                                 PASS = "password";
     
-    private static Integer totalRecommendations, // recommendations to make
-                           neighbourhoodSize; // neighbour size to make recommendations from
+    // parameters for generating recommendations
+    private static ArrayList<Integer> allTotalRecommendations = new ArrayList(), 
+                                      allNeighbourhoodSizes = new ArrayList();
     
-    private static LenskitRecommenderEngine  engine; // engine to make reommendations from
+    private static double totalPrecision, 
+                          totalRecall; // total precision and recall
+    
+     // metrics
+    private static Integer totalDataPieces, 
+                           minDataPieces,
+                           totalNotIdealUsers ; 
+    private static final Integer minIdealDataPieces = 20;
     
     
 
@@ -62,10 +74,6 @@ public class ItemBasedCF {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, 
             IOException, RecommenderConfigurationException, RecommenderBuildException {
         
-        ItemRecommender irec;
-        double totalPrecision = 0, 
-               totalRecall = 0; // precision/recall for each user added together 
-        
         // set slf4j logger to only show errors
         Logger root = (Logger) getLogger(Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.ERROR);
@@ -74,13 +82,53 @@ public class ItemBasedCF {
         Class.forName(JDBC_DRIVER);
         con = DriverManager.getConnection(DB_URL, USER, PASS);
         
-        // Set up engine based on user input
+        // get the neighbourhood size and total recommendations
         getUserInput();
-        createEngineIfNecessary();
+        
+        // counters for metrics completed and metrics total
+        Integer remainingMetrics = 0;
+        Integer totalMetrics = allNeighbourhoodSizes.size() * allTotalRecommendations.size();
+        
+        // generatics metrics for each neighbourhood size and number of recommendations
+        for (Integer size : allNeighbourhoodSizes) {
+            for (Integer recommendations : allTotalRecommendations) {
+                // generate metrics
+                generateMetrics(size, recommendations, con);
+                
+                remainingMetrics++; // this metric is done
+                
+                System.out.println("----FINISHED " + remainingMetrics + "/" + totalMetrics + ": " + 
+                        size + " neighbours and " + recommendations + " recommendations----");
+            }
+        }
+        
+        con.close();
+    }
+    
+    /**
+     * Generates metrics for a neighbourhood size and number of recommendations
+     * @param neighbourhoodSize the size of the neighbourhood for these recommendations
+     * @param totalRecommendations the number of recommendations to make
+     * @param con capstone database connection
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws SQLException
+     * @throws RecommenderBuildException 
+     */
+    public static void generateMetrics(Integer neighbourhoodSize, Integer totalRecommendations, 
+            Connection con) throws ClassNotFoundException, IOException, SQLException,
+            RecommenderBuildException {
+         
+        System.out.println("\n\n----Generating Metrics for " + neighbourhoodSize + 
+                " neighbours and " + totalRecommendations + " recommendations----");
+        
+        resetVariables();
+        
+        createEngineIfNecessary(neighbourhoodSize);
         
         // Set up recommender using engine and DAO, and get item recommender   
         System.out.println("Creating Item Recommender...");
-        irec = createItemRecommender();
+        ItemRecommender irec = createItemRecommender(neighbourhoodSize);
         System.out.println("DONE\n");
 
         // Get all users
@@ -88,34 +136,57 @@ public class ItemBasedCF {
 
         System.out.println("Generating Precision/Recall Documents...");
         
-        initialiseDirectories();
+        initialiseDirectories(neighbourhoodSize, totalRecommendations);
         
         // Iterate over all users and calculate precision and recall
         while (users.next()) {          
+            ArrayList<Long> recs = getMovieRecommendations(users.getInt("USER_ID"), irec,
+                    totalRecommendations);
+
             // create PrecisionRecall for this user based upon their recommendations 
             // and a comparison set of data
-            PrecisionRecall pr = new PrecisionRecall(
-                    getMovieRecommendations(users.getInt("USER_ID"), irec), 
+            PrecisionRecall pr = new PrecisionRecall(recs, 
                     getComparisonDataSet(users.getInt("USER_ID")));
             
             // get precision and recall for this user
             double precision = pr.getPrecision();
             double recall = pr.getRecall();
+            Integer dataCount = getUserDataCount(users.getInt("USER_ID"));
             
-            // output precision and recall to a file
-            outputUserMetrics(users.getInt("USER_ID"), precision, recall);
+            // output metrics to file
+            outputUserMetrics(users.getInt("USER_ID"), precision, recall, dataCount, recs, 
+                    neighbourhoodSize, totalRecommendations);
             
-            // add to global totals for precision and recall
+            // update metrics
             totalPrecision += precision;
             totalRecall += recall;
+            totalDataPieces += dataCount;
+            
+            if (dataCount < minDataPieces) {
+                minDataPieces = dataCount;
+            }
+            
+            if (dataCount < minIdealDataPieces) {
+                totalNotIdealUsers++;
+            }
         }
         
         // output the averrage metrics for this recommendation engine
-        outputAverageMetrics(totalPrecision, totalRecall);
-        
-        System.out.println("DONE\n");
-        
-        con.close();
+        outputAverageMetrics(neighbourhoodSize, totalRecommendations);
+        System.out.println("DONE");
+    }
+    
+    /**
+     * Reset all the variables to their default values
+     */
+    private static void resetVariables() {
+        totalPrecision = 0; 
+        totalRecall = 0;
+        allTotalRecommendations = new ArrayList();
+        allNeighbourhoodSizes = new ArrayList();
+        totalDataPieces = 0; 
+        minDataPieces = Integer.MAX_VALUE;
+        totalNotIdealUsers = 0; 
     }
     
     /**
@@ -127,10 +198,19 @@ public class ItemBasedCF {
 
         // Get user input for number of recommendations and neighbourhood size
         System.out.print("Neighbourhood Size: ");
-        neighbourhoodSize = in.nextInt();
+        String[] input = in.nextLine().split("\\s+");
+        
+        for (String neighbour : input) {
+            allNeighbourhoodSizes.add(Integer.parseInt(neighbour));
+        }
+        
         System.out.print("\nNumber of Recommendations: ");
-        totalRecommendations = in.nextInt();
-        System.out.println("\n");
+        input = in.nextLine().split("\\s+");
+        
+        for (String recommendationSize : input) {
+            allTotalRecommendations.add(Integer.parseInt(recommendationSize));
+        }
+
     }
     
     
@@ -142,7 +222,7 @@ public class ItemBasedCF {
      * @throws SQLException
      * @throws RecommenderBuildException 
      */
-    private static void createEngineIfNecessary() 
+    private static void createEngineIfNecessary(Integer neighbourhoodSize) 
             throws ClassNotFoundException, IOException, SQLException, RecommenderBuildException {
         // engine file for this CF operation
         File engineFile = new File(START_ENGINE_NAME + neighbourhoodSize + END_ENGINE_NAME);
@@ -168,8 +248,9 @@ public class ItemBasedCF {
      * @throws ClassNotFoundException
      * @throws SQLException 
      */
-    private static ItemRecommender createItemRecommender() throws IOException, 
-            RecommenderConfigurationException, ClassNotFoundException, SQLException {
+    private static ItemRecommender createItemRecommender(Integer neighbourhoodSize)
+            throws IOException, RecommenderConfigurationException, ClassNotFoundException, 
+            SQLException {
         
         JDBCRatingDAO dao = MovieRecommenderEngine.createDAO(); // data access object
         LenskitConfiguration dataConfig = new LenskitConfiguration(); // config for DAO free engine
@@ -179,7 +260,8 @@ public class ItemBasedCF {
         dataConfig.addComponent(dao);
 
         // Read in engine based on file name, and add data config
-        engine = LenskitRecommenderEngine.newLoader().addConfiguration(dataConfig)
+        LenskitRecommenderEngine engine = 
+                LenskitRecommenderEngine.newLoader().addConfiguration(dataConfig)
                 .load(new File(START_ENGINE_NAME + neighbourhoodSize + END_ENGINE_NAME));
         
         ir = engine.createRecommender().getItemRecommender();
@@ -214,8 +296,8 @@ public class ItemBasedCF {
      * @param irec the item recommender for this recommendation
      * @return the recommended movie's ids
      */
-    private static ArrayList<Long> getMovieRecommendations(Integer userId, 
-            ItemRecommender irec) {
+    private static ArrayList<Long> getMovieRecommendations(Integer userId, ItemRecommender irec, 
+            Integer totalRecommendations) {
         
         ArrayList<Long> movies = new ArrayList();
 
@@ -257,12 +339,37 @@ public class ItemBasedCF {
     }
 
     /**
+     * Counts the number of data pieces used to recommend content to a user
+     * 
+     * @param userId the id of the user to retrieve a count for
+     * @return the data count
+     */
+    private static Integer getUserDataCount(int userId) throws SQLException {
+        PreparedStatement prepStatement; 
+        ResultSet result;
+        
+        // SQL statement to count data for user
+        prepStatement = con.prepareStatement(
+                "SELECT COUNT(*) FROM capstone.movie_ratings_recommend WHERE USER_ID = " + userId);
+
+        // Execute query and store result
+        result = prepStatement.executeQuery();
+
+        // Ensure resultset is set to the first record
+        result.first();
+
+        // Return the number of data items
+        return result.getInt("COUNT(*)");
+    }
+    
+    /**
      * Creates a directory for metric files to go in to
      */
-    private static void initialiseDirectories() {
+    private static void initialiseDirectories(Integer neighbourhoodSize, 
+            Integer totalRecommendations) {
         File metricsDirectory = new File("metrics");
-        File engineDirectory = new File("metrics/top" + totalRecommendations + 
-                "neighbours" + neighbourhoodSize + "/");
+        File engineDirectory = new File("metrics/neighbours" + neighbourhoodSize + 
+                "top" + totalRecommendations + "/");
         
 
         // If the directories do not exist then create them
@@ -281,24 +388,34 @@ public class ItemBasedCF {
      * @param userId the id of the user to create a file for
      * @param precision the precision of this users recommendations
      * @param recall the recall of this users recommendations
+     * @param dataPieces pieces of data for this user
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    private static void outputUserMetrics(int userId, double precision, double recall) 
-            throws FileNotFoundException, IOException {
-        // file to be written to for user
-        File userDocument = new File("metrics/top" + totalRecommendations + 
-                "neighbours" + neighbourhoodSize + "/" + userId + ".dat");
+    private static void outputUserMetrics(int userId, double precision, double recall, 
+            Integer dataPieces, ArrayList<Long> recs, Integer neighbourhoodSize, 
+            Integer totalRecommendations)  throws FileNotFoundException, IOException {
+        
+        // File to be written to for user
+        File userDocument = new File("metrics/neighbours" + neighbourhoodSize + 
+                "top" + totalRecommendations + "/" + userId + ".dat");
         PrintWriter writer;
 
         // Create file for the metrics
         userDocument.createNewFile();
         writer = new PrintWriter(userDocument);
         
-        // add metrics to file
+        // Add metrics to file
         writer.println("User Id: " + userId);
         writer.println("Precision: " + precision);
         writer.println("Recall: " + recall);
+        writer.println("Data Pieces: " + dataPieces);
+        
+        // Add recommendations to file
+        writer.println("Recommendations:");        
+        for (Long rec : recs) {
+            writer.println(rec);
+        }
         
         writer.close();
     }
@@ -306,17 +423,16 @@ public class ItemBasedCF {
     /**
      * Creates a file containing the average metrics for this recommendation engine
      * 
-     * @param totalPrecision the total precision of all users
-     * @param totalRecall the total recall of all users
      * @throws FileNotFoundException
      * @throws IOException
      * @throws SQLException 
      */
-    private static void outputAverageMetrics(double totalPrecision, double totalRecall) 
+    private static void outputAverageMetrics(Integer neighbourhoodSize,
+            Integer totalRecommendations) 
             throws FileNotFoundException, IOException, SQLException {
-                // file to be written to for user
-        File metricsDocument = new File("metrics/top" + totalRecommendations + 
-                "neighbours" + neighbourhoodSize + "/average.dat");
+        // file to be written to for user
+        File metricsDocument = new File("metrics/neighbours" + neighbourhoodSize + 
+                "top" + totalRecommendations + "/average.dat");
         PrintWriter writer;
         double userCount;
 
@@ -330,6 +446,10 @@ public class ItemBasedCF {
         // add metrics to file
         writer.println("Total Recommendations: " + totalRecommendations);
         writer.println("Neighbourhood Size: " + neighbourhoodSize);
+        writer.println("Avg. Data Pieces Per User: " + totalDataPieces / userCount);
+        writer.println("Min Data Pieces For A User: " + minDataPieces);
+        writer.println("Users With Less Than " + minIdealDataPieces + " Pieces Of Data: " + 
+                       totalNotIdealUsers / userCount * 100 + "%");
         writer.println("Avg. Precision: " + totalPrecision / userCount);
         writer.println("Avg. Recall: " + totalRecall / userCount);
         

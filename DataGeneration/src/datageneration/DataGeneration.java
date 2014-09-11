@@ -14,11 +14,12 @@ public class DataGeneration {
 
     // private variables
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
-    private static final String[] datFiles = {"user_ratedmovies.dat", "user_taggedmovies.dat", "tags.dat", 
-                                              "movie_genres.dat"};
-    private static final String[] foldersToMerge = {"userTags", "userCats"};
+    private static final String[] datFiles = {"user_ratedmovies.dat", "user_taggedmovies.dat", 
+                                              "tags.dat", "movie_genres.dat"},
+                                  foldersToMerge = {"userTags", "userCats"};
     private static final String nameOfMergedFolder = "mergedTagCatProfile";
     private static String dBScope, dBStatus;
+    private static final double minIdealDataCount = 20;// min data count for users to be considered
     
 
     /**
@@ -86,7 +87,8 @@ public class DataGeneration {
             // merge documents and update ratings table if required
              if (dBScope.equals("all")) {
                 System.out.println("Merging documents...");
-                MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge);
+                MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge, 
+                                                       minIdealDataCount);
                 System.out.println("DONE\n");
 
                 System.out.println("Creating Final Ratings Table...");
