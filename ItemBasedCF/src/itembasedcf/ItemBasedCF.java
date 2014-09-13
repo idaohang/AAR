@@ -86,18 +86,20 @@ public class ItemBasedCF {
         getUserInput();
         
         // counters for metrics completed and metrics total
-        Integer remainingMetrics = 0;
+        Integer counterMetrics = 0;
         Integer totalMetrics = allNeighbourhoodSizes.size() * allTotalRecommendations.size();
         
         // generatics metrics for each neighbourhood size and number of recommendations
         for (Integer size : allNeighbourhoodSizes) {
+             System.out.println(allTotalRecommendations);
+
             for (Integer recommendations : allTotalRecommendations) {
                 // generate metrics
                 generateMetrics(size, recommendations, con);
                 
-                remainingMetrics++; // this metric is done
+                counterMetrics++; // this metric is done
                 
-                System.out.println("----FINISHED " + remainingMetrics + "/" + totalMetrics + ": " + 
+                System.out.println("----FINISHED " + counterMetrics + "/" + totalMetrics + ": " + 
                         size + " neighbours and " + recommendations + " recommendations----");
             }
         }
@@ -182,8 +184,6 @@ public class ItemBasedCF {
     private static void resetVariables() {
         totalPrecision = 0; 
         totalRecall = 0;
-        allTotalRecommendations = new ArrayList();
-        allNeighbourhoodSizes = new ArrayList();
         totalDataPieces = 0; 
         minDataPieces = Integer.MAX_VALUE;
         totalNotIdealUsers = 0; 
