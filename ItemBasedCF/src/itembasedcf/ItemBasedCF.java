@@ -91,8 +91,6 @@ public class ItemBasedCF {
         
         // generatics metrics for each neighbourhood size and number of recommendations
         for (Integer size : allNeighbourhoodSizes) {
-             System.out.println(allTotalRecommendations);
-
             for (Integer recommendations : allTotalRecommendations) {
                 // generate metrics
                 generateMetrics(size, recommendations, con);
@@ -159,6 +157,13 @@ public class ItemBasedCF {
             outputUserMetrics(users.getInt("USER_ID"), precision, recall, dataCount, recs, 
                     neighbourhoodSize, totalRecommendations);
             
+                        
+            // hack for userbasedcf, when no recommendations are made then totalPrecision breaks
+            // not sure why no recommendations would be made for a user
+             if (Double.isNaN(precision))  {
+                 precision = 0;
+             }
+            
             // update metrics
             totalPrecision += precision;
             totalRecall += recall;
@@ -171,6 +176,7 @@ public class ItemBasedCF {
             if (dataCount < minIdealDataPieces) {
                 totalNotIdealUsers++;
             }
+
         }
         
         // output the averrage metrics for this recommendation engine
@@ -254,7 +260,6 @@ public class ItemBasedCF {
         
         JDBCRatingDAO dao = MovieRecommenderEngine.createDAO(); // data access object
         LenskitConfiguration dataConfig = new LenskitConfiguration(); // config for DAO free engine
-        ItemRecommender ir;
         
         // Add DAO to config
         dataConfig.addComponent(dao);
@@ -264,10 +269,8 @@ public class ItemBasedCF {
                 LenskitRecommenderEngine.newLoader().addConfiguration(dataConfig)
                 .load(new File(START_ENGINE_NAME + neighbourhoodSize + END_ENGINE_NAME));
         
-        ir = engine.createRecommender().getItemRecommender();
-        
         // create recommender and return item recommender
-        return ir;
+        return engine.createRecommender().getItemRecommender();
     }
     
     /**
@@ -444,8 +447,8 @@ public class ItemBasedCF {
         userCount = countUsers();
         
         // add metrics to file
-        writer.println("Total Recommendations: " + totalRecommendations);
         writer.println("Neighbourhood Size: " + neighbourhoodSize);
+        writer.println("Total Recommendations: " + totalRecommendations);
         writer.println("Avg. Data Pieces Per User: " + totalDataPieces / userCount);
         writer.println("Min Data Pieces For A User: " + minDataPieces);
         writer.println("Users With Less Than " + minIdealDataPieces + " Pieces Of Data: " + 
@@ -453,7 +456,7 @@ public class ItemBasedCF {
         writer.println("Avg. Precision: " + totalPrecision / userCount);
         writer.println("Avg. Recall: " + totalRecall / userCount);
         
-        writer.close();
+        writer.close(); 
     }
 
     /**

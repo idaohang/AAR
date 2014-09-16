@@ -9,6 +9,8 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.grouplens.lenskit.baseline.UserMeanBaseline;
+import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.ModelDisposition;
@@ -16,8 +18,11 @@ import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAOBuilder;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.ItemItemScorer;
+import org.grouplens.lenskit.knn.user.UserUserItemScorer;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 
 /**
  * Creates a RecommenderEngine for movie recommendations
@@ -119,15 +124,26 @@ public class MovieRecommenderEngine {
         LenskitConfiguration config = new LenskitConfiguration(); // config for recommender
 
         // Use item-item CF to score items
-        config.bind(ItemScorer.class).to(ItemItemScorer.class);
+        //config.bind(ItemScorer.class).to(ItemItemScorer.class);
         
         // Set up baseline predictor
-        config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
+        //config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
     
         // Use the baseline for normalizing user ratings
-        config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
+        //config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
 
         // Set number of neighbours
+        //config.set(NeighborhoodSize.class).to(neighbourhoodSize);
+
+        // User-user cf 
+        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+
+        config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class); 
+        
+        config.within(UserVectorNormalizer.class)
+                .bind(VectorNormalizer.class).to(MeanCenteringVectorNormalizer.class);
+        
         config.set(NeighborhoodSize.class).to(neighbourhoodSize);
 
         return config;

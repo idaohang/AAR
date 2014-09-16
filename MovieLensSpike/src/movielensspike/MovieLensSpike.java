@@ -153,9 +153,9 @@ public class MovieLensSpike {
             double recall = pr.getRecall();
             Integer dataCount = getUserDataCount(users.getInt("USER_ID"));
             
-            // output metrics to file
-            outputUserMetrics(users.getInt("USER_ID"), precision, recall, dataCount, recs, 
-                    neighbourhoodSize, totalRecommendations);
+            // output metrics to file - ignored for now, big data set
+            // outputUserMetrics(users.getInt("USER_ID"), precision, recall, dataCount, recs, 
+            //        neighbourhoodSize, totalRecommendations);
             
             // update metrics
             totalPrecision += precision;

@@ -17,8 +17,11 @@ DataGeneration/dist/README.TXT
 # Ignore some recommendation files
 /ItemBasedCF/*.bin
 /ItemBasedCF/metrics
+
 /MovieLensSpike/*.bin
 /MovieLensSpike/metrics
+/MovieLensSpike/movielens-100k.data
+/MovieLensSpike/movielens-10M.dat
 
 /LDA/nbproject/private/
 /LDA/build/
