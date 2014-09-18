@@ -51,6 +51,38 @@ public class CapstoneDBConnection {
         return con;
     }
 
+    public void createLDATables() {
+        try {
+            // Create the database
+            statement = con.createStatement();
+            
+            // Create the table for LDA key storage
+            String sql = "DROP TABLE IF EXISTS capstone.LDA_keys";
+            statement.executeUpdate(sql);
+            sql = "CREATE TABLE capstone.LDA_keys"
+                    + "(TOPIC INTEGER NOT NULL,"
+                    + "DIRICHLET_PARAMETER DECIMAL(2,1) NOT NULL,"
+                    + "DATA_PIECES VARCHAR(512) NOT NULL,"
+                    + "PRIMARY KEY (TOPIC));";
+            statement.executeUpdate(sql);
+
+            // Create the table for LDA result composition
+            sql = "DROP TABLE IF EXISTS capstone.LDA_composition";
+            statement.executeUpdate(sql);
+            sql = "CREATE TABLE capstone.LDA_composition"
+                    + "(USER_ID INTEGER NOT NULL,"
+                    + "TOPIC_ID INTEGER NOT NULL,"
+                    + "TOPIC_DISTRIBUTION DECIMAL(16,15) NOT NULL,"
+                    + "PRIMARY KEY(USER_ID, TOPIC_ID));";
+            statement.executeUpdate(sql);
+            
+            statement.close();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Create MySQL database and a table to store tag information from flat file
      */
@@ -91,7 +123,7 @@ public class CapstoneDBConnection {
                     + "RATING_VAL DECIMAL(2,1) NOT NULL,"
                     + "PRIMARY KEY (USER_ID, MOVIE_ID));";
             statement.executeUpdate(sql);
-            
+
             // Create the final movie ratings table (only for users with enough data)
             sql = "CREATE TABLE capstone.movie_ratings_final"
                     + "(USER_ID INTEGER NOT NULL,"
@@ -99,7 +131,7 @@ public class CapstoneDBConnection {
                     + "RATING_VAL DECIMAL(2,1) NOT NULL,"
                     + "PRIMARY KEY (USER_ID, MOVIE_ID));";
             statement.executeUpdate(sql);
-
+            
             statement.close();
 
         } catch (SQLException ex) {

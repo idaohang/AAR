@@ -1,0 +1,1 @@
+bin\mallet train-topics  --input data.mallet --num-topics 20 --output-state topic-state.gz --output-topic-keys data_keys.txt --output-doc-topics data_composition.txt 
