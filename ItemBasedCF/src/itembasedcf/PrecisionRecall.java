@@ -43,6 +43,11 @@ public class PrecisionRecall {
      * @return the precision
      */
     public double getPrecision() {
+        // check recommendations have actually been made
+        if (recommendations.isEmpty()) {
+            return 0;
+        }
+        
         return truePositives / (truePositives + falsePositives);
     }
     

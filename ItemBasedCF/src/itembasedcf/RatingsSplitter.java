@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * @author Jordan
  */
 public abstract class RatingsSplitter {
-    protected Connection con; // db connection
+    protected static Connection con; // db connection
     
     /**
      * Constructor sets up private connection field
@@ -37,12 +37,23 @@ public abstract class RatingsSplitter {
     public abstract void fillDb() throws SQLException;
     
     /**
-     * Gets all users as a result set
+     * Gets all users for this connection as a result set
      * 
      * @return all the users
      * @throws SQLException 
      */
-    protected ResultSet getUsers() throws SQLException {
+    protected static ResultSet getUsers() throws SQLException {
+        return getUsers(con);
+    }  
+    
+    /**
+     * Gets all users for a connection as a result set
+     * 
+     * @param con connection to the database
+     * @return all the users
+     * @throws SQLException 
+     */
+    protected static ResultSet getUsers(Connection con) throws SQLException {
         // Prepared statement to collect users
         PreparedStatement prepStatement;
 

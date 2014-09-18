@@ -17,7 +17,7 @@ import java.util.List;
  * @author Jordan
  */
 public class RatingsDataHorizontalSplitter extends RatingsSplitter {
-    private double totalSections;
+    private final Integer totalSections;
 
     /**
      * Constructor sets up private connection field
@@ -51,25 +51,10 @@ public class RatingsDataHorizontalSplitter extends RatingsSplitter {
     
     @Override
     public void fillDb() throws SQLException {
-        // Get all user ids
-        ResultSet rs = getUsers();
+        // get list of users to make recommendations for in each section
+        List<List<Integer>> sectionsList = getSectionUserList(totalSections, con);
         
-        // Convert result set to array
-        ArrayList<Integer> allUsers = new ArrayList();
-        
-        while (rs.next()) {
-            allUsers.add(rs.getInt("USER_ID"));
-        }
-
-        // Split array into appropriate number of sections
-        List<List<Integer>> sectionsList = new LinkedList();
-        
-        for (int i = 1; i <= totalSections; i++) {
-            sectionsList.add(allUsers.subList((int)((i - 1) / totalSections * allUsers.size()), 
-                                              (int)(i / totalSections * allUsers.size())));
-        }
-        
-        // Add data to database
+        // Add users who will not be recommended in each section
         int currentTableIndex = 1; // table counter
         
         for (int i = 0; i < sectionsList.size(); i++) {
@@ -86,6 +71,37 @@ public class RatingsDataHorizontalSplitter extends RatingsSplitter {
         }
     }
 
+    /**
+     * Gets a sectioned list of users (ie. which users to recommend data to for each section
+     * 
+     * @param numberOfSections number of sections the users have been split into
+     * @param con connection to the database
+     * @return
+     * @throws SQLException 
+     */
+    public static List<List<Integer>> getSectionUserList(Integer numberOfSections, Connection con) 
+            throws SQLException {
+        // Get all user ids
+        ResultSet rs = getUsers(con);
+        
+        // Convert result set to array
+        ArrayList<Integer> allUsers = new ArrayList();
+        
+        while (rs.next()) {
+            allUsers.add(rs.getInt("USER_ID"));
+        }
+
+        // Split array into appropriate number of sections
+        List<List<Integer>> sectionsList = new LinkedList();
+        
+        for (double i = 1; i <= numberOfSections; i++) {
+            sectionsList.add(allUsers.subList((int)((i - 1) / numberOfSections * allUsers.size()), 
+                                              (int)(i / numberOfSections * allUsers.size())));
+        }
+        
+        return sectionsList;
+    }
+    
     /**
      * Adds a users information to the specified section of the database
      * 

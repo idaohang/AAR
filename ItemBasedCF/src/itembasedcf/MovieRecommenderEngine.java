@@ -39,6 +39,13 @@ public class MovieRecommenderEngine {
                                 DB_URL = "jdbc:mysql://localhost:3306/",
                                 USER = "root",
                                 PASS = "password";
+    
+        // Recommender settings        
+    private static final String FULL_TABLE_NAME = "capstone.movie_ratings_final",
+                                ITEM_COLUMN = "MOVIE_ID",
+                                RATING_COLUMN = "RATING_VAL",
+                                USER_COLUMN = "USER_ID",
+                                TIMESTAMP_COLUMN = null;
 
     LenskitRecommenderEngine engine; // the actual LenskitRecommenderEngine encapsulated
     
@@ -81,7 +88,6 @@ public class MovieRecommenderEngine {
         return engine;
     }
     
-    
     /**
      * Creates and returns a Data Access Object for the database
      *
@@ -98,11 +104,11 @@ public class MovieRecommenderEngine {
         // Build data access object (DAO) and set up columns
         daoBuilder = JDBCRatingDAO.newBuilder();
 
-        daoBuilder.setTableName("capstone.movie_ratings_recommend");
-        daoBuilder.setItemColumn("MOVIE_ID");
-        daoBuilder.setRatingColumn("RATING_VAL");
-        daoBuilder.setUserColumn("USER_ID");
-        daoBuilder.setTimestampColumn(null); // no timestamp
+        daoBuilder.setTableName(FULL_TABLE_NAME);
+        daoBuilder.setItemColumn(ITEM_COLUMN);
+        daoBuilder.setRatingColumn(RATING_COLUMN);
+        daoBuilder.setUserColumn(USER_COLUMN);
+        daoBuilder.setTimestampColumn(TIMESTAMP_COLUMN); // no timestamp
 
         // Initialise DAO with connection and DAO builder
         Class.forName(JDBC_DRIVER);
@@ -124,28 +130,25 @@ public class MovieRecommenderEngine {
         LenskitConfiguration config = new LenskitConfiguration(); // config for recommender
 
         // Use item-item CF to score items
-        //config.bind(ItemScorer.class).to(ItemItemScorer.class);
+        config.bind(ItemScorer.class).to(ItemItemScorer.class);
         
         // Set up baseline predictor
-        //config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
+        config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
     
         // Use the baseline for normalizing user ratings
-        //config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
+        config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
 
         // Set number of neighbours
-        //config.set(NeighborhoodSize.class).to(neighbourhoodSize);
-
-        // User-user cf 
-        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
-
-        config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class); 
-        
-        config.within(UserVectorNormalizer.class)
-                .bind(VectorNormalizer.class).to(MeanCenteringVectorNormalizer.class);
-        
         config.set(NeighborhoodSize.class).to(neighbourhoodSize);
 
+        // User-user cf
+        //config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+        //config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
+        //config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
+        //config.within(UserVectorNormalizer.class).bind(VectorNormalizer.class).to(MeanCenteringVectorNormalizer.class);
+
+        config.set(NeighborhoodSize.class).to(neighbourhoodSize);
+        
         return config;
     }
 
