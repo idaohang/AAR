@@ -27,3 +27,6 @@ DataGeneration/dist/README.TXT
 /LDA/build/
 /LDA/dist/
 /LDA/mergedTagCatProfile/
+/FrequencyTable/nbproject/private/
+/FrequencyTable/dist/
+/FrequencyTable/build/
