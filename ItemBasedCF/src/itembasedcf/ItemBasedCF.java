@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import org.grouplens.lenskit.ItemRecommender;
@@ -47,21 +48,21 @@ public class ItemBasedCF {
                                 USER = "root",
                                 PASS = "password";
     
-    // parameters for generating recommendations
-    private static ArrayList<Integer> allTotalRecommendations = new ArrayList(), 
-                                      allNeighbourhoodSizes = new ArrayList();
+    // Parameters for generating recommendations
+    private static final ArrayList<Integer> allTotalRecommendations = new ArrayList(), 
+                                            allNeighbourhoodSizes = new ArrayList();
     
-    private static double totalPrecision, 
-                          totalRecall; // total precision and recall
     
-     // metrics
+    // Metrics
     private static Integer totalDataPieces, 
                            minDataPieces,
                            totalNotIdealUsers ; 
+    
     private static final Integer minIdealDataPieces = 20;
     
+    private static double totalPrecision, 
+                          totalRecall;
     
-
     /**
      * Entry point for the recommender
      * 
@@ -304,8 +305,12 @@ public class ItemBasedCF {
         
         ArrayList<Long> movies = new ArrayList();
 
+                // We don't want to exclude any results from recommendations. By default all previously
+        // rate movies are excluded, however we need these to be recommended to get precision/recall
+        HashSet<Long> exclude = new HashSet();
+        
         // Get ScoredId recommendations
-        List<ScoredId> recs = irec.recommend(userId, totalRecommendations);
+        List<ScoredId> recs = irec.recommend(userId, totalRecommendations, null, exclude);
 
         // Pull out just ratings from ScoredIds
         for (ScoredId item : recs) {
@@ -328,7 +333,7 @@ public class ItemBasedCF {
 
         // SQL statement to collect distinct users
         prepStatement = con.prepareStatement(
-                "SELECT MOVIE_ID FROM capstone.movie_ratings_compare WHERE USER_ID = " + userId);
+                "SELECT MOVIE_ID FROM capstone.movie_ratings_final WHERE USER_ID = " + userId);
 
         // Execute query and return results
         rs = prepStatement.executeQuery();
@@ -353,7 +358,7 @@ public class ItemBasedCF {
         
         // SQL statement to count data for user
         prepStatement = con.prepareStatement(
-                "SELECT COUNT(*) FROM capstone.movie_ratings_recommend WHERE USER_ID = " + userId);
+                "SELECT COUNT(*) FROM capstone.movie_ratings_final WHERE USER_ID = " + userId);
 
         // Execute query and store result
         result = prepStatement.executeQuery();
