@@ -10,8 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,7 +22,18 @@ import java.util.zip.GZIPInputStream;
  */
 public class LDAFrequency {
 
+    // Number of header lines to skip when reading file
     private static final int SKIP_LINES = 3;
+
+    // Relative path to file location 
+    private static final String FILE_PATH = "../LDA/mallet/topic-state.gz";
+
+    // Reader object
+    private static BufferedReader reader;
+
+    // Data structure to store all information
+    // HashMap<UserID, HashMap<TopicID, HashMap<WordID, HashMap<WordFreq, WordDist>>>>
+    private static HashMap<String, HashMap<String, HashMap<String, Integer>>> users;
 
     /**
      * @param args the command line arguments
@@ -33,48 +42,109 @@ public class LDAFrequency {
     public static void main(String[] args) throws FileNotFoundException, IOException {
 
         // Grab and wrap .gz file
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream("../LDA/mallet/topic-state.gz"))));
+        reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                new FileInputStream(FILE_PATH))));
+
+        // Instantiate HashMap structure for user/topic/word information
+        users = new HashMap<>();
 
         // Skip over header lines (straight to relevant data)
         for (int i = 0; i < SKIP_LINES; i++) {
             reader.readLine();
         }
 
-        String line;
-        HashMap<String, Integer> tbl = new HashMap<String, Integer>();
-        ArrayList<String> tags = new ArrayList<>();
+        // Insert data into structure
+        populateStructure();
+        
+        // Iterate through and calculate statistics of entire structure
+        analyseStructure();
 
-        // For development, only use one user's (285) lines (instead of 177,000)
-        for (int i = 0; i < 285; i++) {
-            line = reader.readLine();
-
-            // File is space-separated
-            String parts[] = line.split(" ");
-
-            // Grab required information to build structure
-            String typeIndex = parts[3];
-            String type = parts[4];
-            String topic = parts[5];
-
-            // If the key is not present in the structure, insert it
-            if (!(tbl.containsKey(typeIndex))) {
-                tbl.put(typeIndex, 0);
-            }
-
-            // Increment the count associated with the key
-            tbl.put(typeIndex, tbl.get(typeIndex) + 1);
-
-        }
-
-        Iterator it = tbl.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            System.out.println(pairs.getKey() + " occurs " + pairs.getValue() + " time(s)");
-            it.remove(); // avoids a ConcurrentModificationException
-        }
-
-//        while ((line = reader.readLine()) != null) {
-//        }
     }
 
+    /**
+     * Iterate through entire structure and calculate various statistical values
+     */
+    private static void analyseStructure() {
+        // Iterate through each level of structure, eventually calculating frequency distribution
+        Iterator i = users.entrySet().iterator();
+        while (i.hasNext()) {
+            Map.Entry userEntry = (Map.Entry) i.next();
+            String userID = (String) userEntry.getKey();
+            HashMap<String, HashMap<String, Integer>> userVal
+                    = (HashMap<String, HashMap<String, Integer>>) userEntry.getValue();
+
+            Iterator j = userVal.entrySet().iterator();
+            while (j.hasNext()) {
+                Map.Entry topicEntry = (Map.Entry) j.next();
+                String topicID = (String) topicEntry.getKey();
+                HashMap<String, Integer> topicVal
+                        = (HashMap<String, Integer>) topicEntry.getValue();
+
+                Integer sumAll = 0;
+                for (Map.Entry<String, Integer> e : topicVal.entrySet()) {
+                    sumAll += e.getValue();
+                }
+
+                Iterator k = topicVal.entrySet().iterator();
+                while (k.hasNext()) {
+
+                    Map.Entry wordEntry = (Map.Entry) k.next();
+                    String wordID = (String) wordEntry.getKey();
+                    Integer wordFreq = (Integer) wordEntry.getValue();
+
+                    Double wordDist = (double) wordFreq / (double) sumAll;
+
+                    System.out.println(userID + "\t" + topicID + "\t"
+                            + wordID + "\t" + wordFreq + "\t" + wordDist);
+                }
+            }
+        }
+        System.out.println("USERID  TOPICID WORDID  WORDFRQ WORDDST");
+    }
+
+    /**
+     * Read through parameterised file and programmatically insert values into data structure
+     *
+     * @throws IOException
+     */
+    private static void populateStructure() throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+
+            // Split on space character
+            String parts[] = line.split(" ");
+
+            // The user's ID
+            String user = parts[1].substring((parts[1].lastIndexOf('\\') + 1),
+                    parts[1].lastIndexOf('.'));
+
+            // The unique ID of the word
+            String typeIndex = parts[3];
+
+            // The word itself
+            String wordText = parts[4];
+
+            // The unique ID of the topic the word belongs to
+            String topicId = parts[5];
+
+            // If the user does not yet exist in the structure, add them
+            if (!users.containsKey(user)) {
+                users.put(user, new HashMap<String, HashMap<String, Integer>>());
+            }
+
+            // If the topic does not yet exist in the structure, add it
+            if (!(users.get(user).containsKey(topicId))) {
+                users.get(user).put(topicId, new HashMap<String, Integer>());
+            }
+
+            // If the word does not yet exist in the structure, add it
+            if (!(users.get(user).get(topicId).containsKey(typeIndex))) {
+                users.get(user).get(topicId).put(typeIndex, 0);
+            }
+
+            // Increment the counter of occurences of the word
+            users.get(user).get(topicId).put(typeIndex,
+                    users.get(user).get(topicId).get(typeIndex) + 1);
+        }
+    }
 }
