@@ -1,17 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package ldafrequency;
+package frequencytable;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -20,13 +16,15 @@ import java.util.zip.GZIPInputStream;
  *
  * @author Clarky
  */
-public class LDAFrequency {
+public class FrequencyStructure {
 
     // Number of header lines to skip when reading file
     private static final int SKIP_LINES = 3;
 
     // Relative path to file location 
     private static final String FILE_PATH = "../LDA/mallet/topic-state.gz";
+
+    private static int numTopics;
 
     // Reader object
     private static BufferedReader reader;
@@ -35,11 +33,19 @@ public class LDAFrequency {
     // HashMap<UserID, HashMap<TopicID, HashMap<WordID, HashMap<WordFreq, WordDist>>>>
     private static HashMap<String, HashMap<String, HashMap<String, Integer>>> users;
 
+    // Writer object to output resultant structure to text file
+    private static PrintWriter writer;
+
+    private static ArrayList<FrequencyMatrix> matricies;
+
     /**
      * @param args the command line arguments
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
+
+        // Track and determine the number of topics (instead of hard-coding value)
+        numTopics = 0;
 
         // Grab and wrap .gz file
         reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(
@@ -48,6 +54,11 @@ public class LDAFrequency {
         // Instantiate HashMap structure for user/topic/word information
         users = new HashMap<>();
 
+        // Instantiate PrintWriter with output file name and charset
+        writer = new PrintWriter("output.txt", "UTF-8");
+
+        matricies = new ArrayList<>();
+
         // Skip over header lines (straight to relevant data)
         for (int i = 0; i < SKIP_LINES; i++) {
             reader.readLine();
@@ -55,51 +66,66 @@ public class LDAFrequency {
 
         // Insert data into structure
         populateStructure();
-        
+
         // Iterate through and calculate statistics of entire structure
-        analyseStructure();
+        iterateStructure();
+
+        // Create and populate matrix structure
+        for (Map.Entry user : users.entrySet()) {
+            matricies.add(new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), numTopics));
+        }
+
+        // Output all user's matrix objects
+        for (int i = 0; i < matricies.size(); i++) {
+            System.out.println(matricies.get(i).toString());
+        }
 
     }
 
     /**
      * Iterate through entire structure and calculate various statistical values
      */
-    private static void analyseStructure() {
-        // Iterate through each level of structure, eventually calculating frequency distribution
-        Iterator i = users.entrySet().iterator();
-        while (i.hasNext()) {
-            Map.Entry userEntry = (Map.Entry) i.next();
+    private static void iterateStructure() {
+
+        // Iterate through all users in structure
+        for (Map.Entry userEntry : users.entrySet()) {
             String userID = (String) userEntry.getKey();
             HashMap<String, HashMap<String, Integer>> userVal
                     = (HashMap<String, HashMap<String, Integer>>) userEntry.getValue();
 
-            Iterator j = userVal.entrySet().iterator();
-            while (j.hasNext()) {
-                Map.Entry topicEntry = (Map.Entry) j.next();
+            // Iterate through all user's topics in structures
+            for (Map.Entry topicEntry : userVal.entrySet()) {
                 String topicID = (String) topicEntry.getKey();
                 HashMap<String, Integer> topicVal
                         = (HashMap<String, Integer>) topicEntry.getValue();
 
+                // Find the total number of words in given topic
                 Integer sumAll = 0;
                 for (Map.Entry<String, Integer> e : topicVal.entrySet()) {
                     sumAll += e.getValue();
                 }
 
-                Iterator k = topicVal.entrySet().iterator();
-                while (k.hasNext()) {
+                // Write header information to file
+                writer.println("USER: " + userID + " TOPIC: " + topicID);
+                writer.println("USERID  TOPICID WORDID  WORDFRQ WORDDST");
 
-                    Map.Entry wordEntry = (Map.Entry) k.next();
+                // Iterate through all user's topic's words in structure
+                for (Map.Entry wordEntry : topicVal.entrySet()) {
                     String wordID = (String) wordEntry.getKey();
                     Integer wordFreq = (Integer) wordEntry.getValue();
 
+                    // Calculate the distribution of each word within the topic
                     Double wordDist = (double) wordFreq / (double) sumAll;
 
-                    System.out.println(userID + "\t" + topicID + "\t"
+                    // Write word information to file
+                    writer.println(userID + "\t" + topicID + "\t"
                             + wordID + "\t" + wordFreq + "\t" + wordDist);
                 }
+
+                // Whitespace for output readability
+                writer.println();
             }
         }
-        System.out.println("USERID  TOPICID WORDID  WORDFRQ WORDDST");
     }
 
     /**
@@ -122,8 +148,7 @@ public class LDAFrequency {
             String typeIndex = parts[3];
 
             // The word itself
-            String wordText = parts[4];
-
+            // String wordText = parts[4];
             // The unique ID of the topic the word belongs to
             String topicId = parts[5];
 
@@ -145,6 +170,10 @@ public class LDAFrequency {
             // Increment the counter of occurences of the word
             users.get(user).get(topicId).put(typeIndex,
                     users.get(user).get(topicId).get(typeIndex) + 1);
+
+            if (users.get(user).size() > numTopics) {
+                numTopics = users.get(user).get(topicId).size();
+            }
         }
     }
 }
