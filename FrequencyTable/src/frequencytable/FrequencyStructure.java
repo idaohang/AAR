@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -35,8 +34,8 @@ public class FrequencyStructure {
 
     // Writer object to output resultant structure to text file
     private static PrintWriter writer;
-
-    private static ArrayList<FrequencyMatrix> matricies;
+    
+    private static HashMap<String, FrequencyMatrix> mat;
 
     /**
      * @param args the command line arguments
@@ -53,11 +52,11 @@ public class FrequencyStructure {
 
         // Instantiate HashMap structure for user/topic/word information
         users = new HashMap<>();
+        
+        mat = new HashMap<>();
 
         // Instantiate PrintWriter with output file name and charset
         writer = new PrintWriter("output.txt", "UTF-8");
-
-        matricies = new ArrayList<>();
 
         // Skip over header lines (straight to relevant data)
         for (int i = 0; i < SKIP_LINES; i++) {
@@ -68,18 +67,18 @@ public class FrequencyStructure {
         populateStructure();
 
         // Iterate through and calculate statistics of entire structure
-        iterateStructure();
+        // iterateStructure();
 
         // Create and populate matrix structure
         for (Map.Entry user : users.entrySet()) {
-            matricies.add(new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), numTopics));
+            
+            // Create, instantiate and add a Matrix object for each user
+            mat.put(user.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), numTopics));
+            
+            // Output each user's Matrix
+            writer.println("USER: " + user.getKey());
+            writer.println(mat.get(user.toString()).toString());
         }
-
-        // Output all user's matrix objects
-        for (int i = 0; i < matricies.size(); i++) {
-            System.out.println(matricies.get(i).toString());
-        }
-
     }
 
     /**

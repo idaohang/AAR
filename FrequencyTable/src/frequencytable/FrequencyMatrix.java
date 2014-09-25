@@ -1,5 +1,6 @@
 package frequencytable;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,12 +141,19 @@ public class FrequencyMatrix {
 
     @Override
     public String toString() {
+        
+        // Enforce a number of decimal places in output
+        DecimalFormat df = new DecimalFormat("0.00000");
+        
+        // String to accrue output
         String s = "";
 
         // Iterate through entire matrix one level at-a-time, outputting cell information
-        for (int i = 0; i < matrix.length; i++) {
+        s += "\t\t  WORD DISTRIBUTION\n";
+        for (int i = 0; i < numTopics; i++) {
+            s += "TOPIC " + i + " : ";
             for (int j = 0; j < matrix[i].length; j++) {
-                s += matrix[i][j] + " | ";
+                s += df.format(matrix[i][j])+ " | ";
             }
             s += "\n";
         }

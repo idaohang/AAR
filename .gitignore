@@ -23,10 +23,14 @@ DataGeneration/dist/README.TXT
 /MovieLensSpike/movielens-100k.data
 /MovieLensSpike/movielens-10M.dat
 
-/LDA/nbproject/private/
-/LDA/build/
-/LDA/dist/
-/LDA/mergedTagCatProfile/
+# Ignore Mallet generated files; enforce rerun before use
+/LDA/mallet/*.txt
+/LDA/mallet/*.mallet
+/LDA/mallet/*.gz
+
 /FrequencyTable/nbproject/private/
 /FrequencyTable/dist/
 /FrequencyTable/build/
+
+# Ignore generated text file, enforce rerun before use
+/FrequencyTable/*.txt
