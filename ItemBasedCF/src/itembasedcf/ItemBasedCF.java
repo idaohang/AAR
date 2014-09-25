@@ -259,7 +259,7 @@ public class ItemBasedCF {
             throws IOException, RecommenderConfigurationException, ClassNotFoundException, 
             SQLException {
         
-        JDBCRatingDAO dao = MovieRecommenderEngine.createDAO(); // data access object
+        JDBCRatingDAO dao = MovieRecommenderEngine.createItemDAO(); // data access object
         LenskitConfiguration dataConfig = new LenskitConfiguration(); // config for DAO free engine
         
         // Add DAO to config

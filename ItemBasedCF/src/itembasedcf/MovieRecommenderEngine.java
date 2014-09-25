@@ -40,12 +40,19 @@ public class MovieRecommenderEngine {
                                 USER = "root",
                                 PASS = "password";
     
-        // Recommender settings        
-    private static final String FULL_TABLE_NAME = "capstone.movie_ratings_final",
-                                ITEM_COLUMN = "MOVIE_ID",
-                                RATING_COLUMN = "RATING_VAL",
+    // Recommender settings        
+    private static final String FULL_TABLE_NAME = "capstone.lda_composition",
+                                ITEM_COLUMN = "TOPIC_ID",
+                                RATING_COLUMN = "TOPIC_DISTRIBUTION",
                                 USER_COLUMN = "USER_ID",
                                 TIMESTAMP_COLUMN = null;
+    
+    // Recommender settings for rating DAO, to generate recommendations from      
+    private static final String RATING_FULL_TABLE_NAME = "capstone.movie_ratings_final",
+                                RATING_ITEM_COLUMN = "MOVIE_ID",
+                                RATING_RATING_COLUMN = "RATING_VAL",
+                                RATING_USER_COLUMN = "USER_ID",
+                                RATING_TIMESTAMP_COLUMN = null;
 
     LenskitRecommenderEngine engine; // the actual LenskitRecommenderEngine encapsulated
     
@@ -117,6 +124,36 @@ public class MovieRecommenderEngine {
 
         return dao;
     }
+    
+    /**
+     * Creates and returns a Data Access Object for the ratings data in the database
+     *
+     * @return the DAO
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     */
+    public static JDBCRatingDAO createItemDAO() throws ClassNotFoundException, SQLException {
+        // private variables
+        Connection con; // connection to db
+        JDBCRatingDAO dao; // data access object
+        JDBCRatingDAOBuilder daoBuilder; // data builder        
+
+        // Build data access object (DAO) and set up columns
+        daoBuilder = JDBCRatingDAO.newBuilder();
+
+        daoBuilder.setTableName(RATING_FULL_TABLE_NAME);
+        daoBuilder.setItemColumn(RATING_ITEM_COLUMN);
+        daoBuilder.setRatingColumn(RATING_RATING_COLUMN);
+        daoBuilder.setUserColumn(RATING_USER_COLUMN);
+        daoBuilder.setTimestampColumn(RATING_TIMESTAMP_COLUMN); // no timestamp
+
+        // Initialise DAO with connection and DAO builder
+        Class.forName(JDBC_DRIVER);
+        con = DriverManager.getConnection(DB_URL, USER, PASS);
+        dao = daoBuilder.build(con);
+
+        return dao;
+    }
 
     /**
      * Sets up and returns a LenskitConfiguration for item-item CF
@@ -129,23 +166,16 @@ public class MovieRecommenderEngine {
 
         LenskitConfiguration config = new LenskitConfiguration(); // config for recommender
 
-        // Use item-item CF to score items
-        config.bind(ItemScorer.class).to(ItemItemScorer.class);
-        
-        // Set up baseline predictor
-        config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
-    
-        // Use the baseline for normalizing user ratings
-        config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
+        // Item-item
+        //config.bind(ItemScorer.class).to(ItemItemScorer.class);
+        //config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
+        //config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
 
-        // Set number of neighbours
-        config.set(NeighborhoodSize.class).to(neighbourhoodSize);
-
-        // User-user cf
-        //config.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        //config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
-        //config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
-        //config.within(UserVectorNormalizer.class).bind(VectorNormalizer.class).to(MeanCenteringVectorNormalizer.class);
+        // User-user
+        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+        config.bind(BaselineScorer.class, ItemScorer.class).to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
+        config.within(UserVectorNormalizer.class).bind(VectorNormalizer.class).to(MeanCenteringVectorNormalizer.class);
 
         config.set(NeighborhoodSize.class).to(neighbourhoodSize);
         
