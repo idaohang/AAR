@@ -15,6 +15,9 @@ public class FrequencyMatrix {
     // The parameterised number of topics that are present within model (user-passed parameter)
     private int numTopics;
 
+    // The minimum frequency to be accepted by the system
+    private final int LOW_END_CUTOFF = 9;
+
     // The two-dimensional array (matrix) responsible for storing matricies
     private double[][] matrix;
 
@@ -31,13 +34,21 @@ public class FrequencyMatrix {
     public FrequencyMatrix(HashMap<String, HashMap<String, Integer>> input, int topics) {
 
         // Assign input to local input variable
-        in = input;
+        in = enforceCutoff(input, LOW_END_CUTOFF);
 
         // Assign the topic number to local variable
         numTopics = topics;
 
+        int b = 0;
+        for (Map.Entry i : in.entrySet()) {
+            if (in.get(i.getKey()).size() > b) {
+                b = in.get(i.getKey()).size();
+            }
+        }
+        System.out.println(b);
+
         // Create two-dimensional array given number of topics (in entire corpus, not just input)
-        matrix = new double[numTopics][findMaxWords()];
+        matrix = new double[numTopics][getMaxWords()];
 
         // Fill elements of matrix
         populateMatrix();
@@ -64,8 +75,8 @@ public class FrequencyMatrix {
                 // Iterate through all words, adding to array
                 for (Map.Entry w : word.entrySet()) {
                     wordCount++;
-                    matrix[i][wordCount - 1] = new Double(calcDist((int) w.getValue(),
-                            findNumOccurences(word)));
+                    matrix[i][wordCount - 1] = new Double(getDist((int) w.getValue(),
+                            getNumOccurences(word)));
                 }
             } else {
 
@@ -85,19 +96,19 @@ public class FrequencyMatrix {
     }
 
     /**
-     * Calculate and return the largest measure of words throughout the entire corpus of data from
-     * a single user. This will analyse any given number of topics and return the most words 
-     * contained in any one topic.
-     * 
+     * Calculate and return the largest measure of words throughout the entire corpus of data from a
+     * single user. This will analyse any given number of topics and return the most words contained
+     * in any one topic.
+     *
      * @return The maximum number of words in a user's corpus of data
      */
-    private int findMaxWords() {
+    private int getMaxWords() {
         int counter = 0;
 
         // Iterate through all topics, counting number of words in each, returning largest count
         for (Map.Entry topic : in.entrySet()) {
             String t = (String) topic.getKey();
-            
+
             // If the current topic contains more elements than the previous largest, replace value
             if (in.get(t).size() > counter) {
                 counter = in.get(t).size();
@@ -109,13 +120,13 @@ public class FrequencyMatrix {
     /**
      * Calculate and return the number of occurrences (non-distinct word items) occurring within a
      * single topic. A single word may be used many times, we want to count every occurring of this
-     * word. This is achieved with frequency information. Result is used to calculate word 
+     * word. This is achieved with frequency information. Result is used to calculate word
      * distribution within a given topic.
-     * 
+     *
      * @return The number of uses (i.e. not distinct) of words in any topic
      */
-    private int findNumOccurences(HashMap<String, Integer> get) {
-        
+    private int getNumOccurences(HashMap<String, Integer> get) {
+
         // Counter for the number of words
         int counter = 0;
 
@@ -128,23 +139,23 @@ public class FrequencyMatrix {
     }
 
     /**
-     * Calculate the word distribution for any word given the number of other words in a topic. 
-     * 
+     * Calculate the word distribution for any word given the number of other words in a topic.
+     *
      * @param word The word for which distribution is being calculated
      * @param totalWords The total number of words within a topic
      * @return The distribution calculation for a word in a topic
      */
-    private double calcDist(int word, int totalWords) {
+    private double getDist(int word, int totalWords) {
         double r = (double) word / (double) totalWords;
         return r;
     }
 
     @Override
     public String toString() {
-        
+
         // Enforce a number of decimal places in output
         DecimalFormat df = new DecimalFormat("0.00000");
-        
+
         // String to accrue output
         String s = "";
 
@@ -153,12 +164,50 @@ public class FrequencyMatrix {
         for (int i = 0; i < numTopics; i++) {
             s += "TOPIC " + i + " : ";
             for (int j = 0; j < matrix[i].length; j++) {
-                s += df.format(matrix[i][j])+ " | ";
+                s += df.format(matrix[i][j]) + " | ";
             }
             s += "\n";
         }
 
         return s;
 
+    }
+
+    /**
+     * Remove words from structure that have less than a parameterised minimum value.
+     *
+     * This method is employed to help limit the size of the resultant matrices
+     *
+     * @param input Original HashMap structure without any items removed
+     * @param cutoff The minimum frequency count to retain a place in the structure
+     * @return Updated HashMap structure
+     */
+    private HashMap<String, HashMap<String, Integer>> enforceCutoff(HashMap<String, HashMap<String, Integer>> input, int cutoff) {
+
+        if (cutoff == -1) {
+            return input;
+        } else {
+
+            HashMap<String, HashMap<String, Integer>> output = new HashMap<>();
+
+            // Iterate through all topics
+            for (Map.Entry topic : input.entrySet()) {
+
+                // If the topic is not yet in the output structure, add it
+                if (!(output.containsKey(topic.getKey()))) {
+                    output.put((String) topic.getKey(), new HashMap<String, Integer>());
+                }
+
+                // Iterate through all words
+                for (Map.Entry word : ((HashMap<String, Integer>) topic.getValue()).entrySet()) {
+
+                    // If the word's frequency is high enough to be added, add it
+                    if ((Integer) word.getValue() >= cutoff) {
+                        output.get(topic.getKey()).put((String) word.getKey(), (Integer) word.getValue());
+                    }
+                }
+            }
+            return output;
+        }
     }
 }
