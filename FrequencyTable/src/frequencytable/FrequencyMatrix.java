@@ -15,8 +15,8 @@ public class FrequencyMatrix {
     // The parameterised number of topics that are present within model (user-passed parameter)
     private int numTopics;
 
-    // The minimum frequency to be accepted by the system
-    private final int LOW_END_CUTOFF = 9;
+    // The minimum frequency to be accepted by the system (as selected by Yue)
+    private final int LOW_END_CUTOFF = 2;
 
     // The two-dimensional array (matrix) responsible for storing matricies
     private double[][] matrix;
@@ -48,7 +48,7 @@ public class FrequencyMatrix {
         System.out.println(b);
 
         // Create two-dimensional array given number of topics (in entire corpus, not just input)
-        matrix = new double[numTopics][getMaxWords()];
+        matrix = new double[numTopics][getMaxWords(in)];
 
         // Fill elements of matrix
         populateMatrix();
@@ -102,16 +102,16 @@ public class FrequencyMatrix {
      *
      * @return The maximum number of words in a user's corpus of data
      */
-    private int getMaxWords() {
+    private int getMaxWords(HashMap<String, HashMap<String, Integer>> get) {
         int counter = 0;
 
         // Iterate through all topics, counting number of words in each, returning largest count
-        for (Map.Entry topic : in.entrySet()) {
+        for (Map.Entry topic : get.entrySet()) {
             String t = (String) topic.getKey();
 
             // If the current topic contains more elements than the previous largest, replace value
-            if (in.get(t).size() > counter) {
-                counter = in.get(t).size();
+            if (get.get(t).size() > counter) {
+                counter = get.get(t).size();
             }
         }
         return counter;
@@ -207,7 +207,13 @@ public class FrequencyMatrix {
                     }
                 }
             }
-            return output;
+
+            // If the resultant matrix is empty (or worse, negative size), just return the original
+            if (getMaxWords(output) <= 0) {
+                return input;
+            } else {
+                return output;
+            }
         }
     }
 }
