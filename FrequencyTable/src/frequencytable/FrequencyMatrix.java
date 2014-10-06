@@ -15,9 +15,6 @@ public class FrequencyMatrix {
     // The parameterised number of topics that are present within model (user-passed parameter)
     private int numTopics;
 
-    // The minimum frequency to be accepted by the system (as selected by Yue)
-    private final int LOW_END_CUTOFF = 2;
-
     // The two-dimensional array (matrix) responsible for storing matricies
     private double[][] matrix;
 
@@ -31,24 +28,16 @@ public class FrequencyMatrix {
      * @param input HashMap of topics & words/frequencies
      * @param topics The number of topics intended for model
      */
-    public FrequencyMatrix(HashMap<String, HashMap<String, Integer>> input, int topics) {
+    public FrequencyMatrix(HashMap<String, HashMap<String, Integer>> input, int topics, int size) {
 
         // Assign input to local input variable
-        in = enforceCutoff(input, LOW_END_CUTOFF);
+        in = input;//enforceCutoff(input, LOW_END_CUTOFF);
 
         // Assign the topic number to local variable
         numTopics = topics;
 
-        int b = 0;
-        for (Map.Entry i : in.entrySet()) {
-            if (in.get(i.getKey()).size() > b) {
-                b = in.get(i.getKey()).size();
-            }
-        }
-        System.out.println(b);
-
         // Create two-dimensional array given number of topics (in entire corpus, not just input)
-        matrix = new double[numTopics][getMaxWords(in)];
+        matrix = new double[numTopics][size];
 
         // Fill elements of matrix
         populateMatrix();
@@ -93,28 +82,6 @@ public class FrequencyMatrix {
      */
     public double[][] getMatrix() {
         return matrix;
-    }
-
-    /**
-     * Calculate and return the largest measure of words throughout the entire corpus of data from a
-     * single user. This will analyse any given number of topics and return the most words contained
-     * in any one topic.
-     *
-     * @return The maximum number of words in a user's corpus of data
-     */
-    private int getMaxWords(HashMap<String, HashMap<String, Integer>> get) {
-        int counter = 0;
-
-        // Iterate through all topics, counting number of words in each, returning largest count
-        for (Map.Entry topic : get.entrySet()) {
-            String t = (String) topic.getKey();
-
-            // If the current topic contains more elements than the previous largest, replace value
-            if (get.get(t).size() > counter) {
-                counter = get.get(t).size();
-            }
-        }
-        return counter;
     }
 
     /**
@@ -171,49 +138,5 @@ public class FrequencyMatrix {
 
         return s;
 
-    }
-
-    /**
-     * Remove words from structure that have less than a parameterised minimum value.
-     *
-     * This method is employed to help limit the size of the resultant matrices
-     *
-     * @param input Original HashMap structure without any items removed
-     * @param cutoff The minimum frequency count to retain a place in the structure
-     * @return Updated HashMap structure
-     */
-    private HashMap<String, HashMap<String, Integer>> enforceCutoff(HashMap<String, HashMap<String, Integer>> input, int cutoff) {
-
-        if (cutoff == -1) {
-            return input;
-        } else {
-
-            HashMap<String, HashMap<String, Integer>> output = new HashMap<>();
-
-            // Iterate through all topics
-            for (Map.Entry topic : input.entrySet()) {
-
-                // If the topic is not yet in the output structure, add it
-                if (!(output.containsKey(topic.getKey()))) {
-                    output.put((String) topic.getKey(), new HashMap<String, Integer>());
-                }
-
-                // Iterate through all words
-                for (Map.Entry word : ((HashMap<String, Integer>) topic.getValue()).entrySet()) {
-
-                    // If the word's frequency is high enough to be added, add it
-                    if ((Integer) word.getValue() >= cutoff) {
-                        output.get(topic.getKey()).put((String) word.getKey(), (Integer) word.getValue());
-                    }
-                }
-            }
-
-            // If the resultant matrix is empty (or worse, negative size), just return the original
-            if (getMaxWords(output) <= 0) {
-                return input;
-            } else {
-                return output;
-            }
-        }
     }
 }

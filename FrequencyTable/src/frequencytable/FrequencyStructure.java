@@ -20,6 +20,9 @@ public class FrequencyStructure {
     // Number of header lines to skip when reading file
     private static final int SKIP_LINES = 3;
 
+    // The minimum frequency to be accepted by the system (as selected by Yue)
+    private static final int LOW_END_CUTOFF = 2;
+
     // Relative path to file location 
     private static final String FILE_PATH = "../LDA/mallet/topic-state.gz";
 
@@ -34,7 +37,7 @@ public class FrequencyStructure {
 
     // Writer object to output resultant structure to text file
     private static PrintWriter writer;
-    
+
     private static HashMap<String, FrequencyMatrix> mat;
 
     /**
@@ -52,7 +55,6 @@ public class FrequencyStructure {
 
         // Instantiate HashMap structure for user/topic/word information
         users = new HashMap<>();
-        
         mat = new HashMap<>();
 
         // Instantiate PrintWriter with output file name and charset
@@ -66,65 +68,98 @@ public class FrequencyStructure {
         // Insert data into structure
         populateStructure();
 
-        // Iterate through and calculate statistics of entire structure
-        // iterateStructure();
+        // Cut words if they do not occur frequently enough (unless cutting them empties the matrix)
+        trimSize();
 
-        // Create and populate matrix structure
+        // Calculate the largest matrix
+        int biggest = calcBiggest();
+
+        // Create matrix objects and write their form to text file
         for (Map.Entry user : users.entrySet()) {
-            
+
             // Create, instantiate and add a Matrix object for each user
-            mat.put(user.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), numTopics));
-            
+            mat.put(user.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), 10, biggest));
+
             // Output each user's Matrix
             writer.println("USER: " + user.getKey());
             writer.println(mat.get(user.toString()).toString());
         }
     }
 
+    private static void trimSize() {
+        for (Map.Entry user : users.entrySet()) {
+
+            HashMap<String, HashMap<String, Integer>> userVal = (HashMap<String, HashMap<String, Integer>>) user.getValue();
+            userVal = enforceCutoff(userVal, LOW_END_CUTOFF);
+            users.put((String) user.getKey(), userVal);
+        }
+    }
+
     /**
-     * Iterate through entire structure and calculate various statistical values
+     * Remove words from structure that have less than a parameterised minimum value.
+     *
+     * This method is employed to help limit the size of the resultant matrices
+     *
+     * @param input Original HashMap structure without any items removed
+     * @param cutoff The minimum frequency count to retain a place in the structure
+     * @return Updated HashMap structure
      */
-    private static void iterateStructure() {
+    private static HashMap<String, HashMap<String, Integer>> enforceCutoff(HashMap<String, HashMap<String, Integer>> input, int cutoff) {
 
-        // Iterate through all users in structure
-        for (Map.Entry userEntry : users.entrySet()) {
-            String userID = (String) userEntry.getKey();
-            HashMap<String, HashMap<String, Integer>> userVal
-                    = (HashMap<String, HashMap<String, Integer>>) userEntry.getValue();
+        if (cutoff <= 1) {
+            return input;
+        } else {
 
-            // Iterate through all user's topics in structures
-            for (Map.Entry topicEntry : userVal.entrySet()) {
-                String topicID = (String) topicEntry.getKey();
-                HashMap<String, Integer> topicVal
-                        = (HashMap<String, Integer>) topicEntry.getValue();
+            HashMap<String, HashMap<String, Integer>> output = new HashMap<>();
 
-                // Find the total number of words in given topic
-                Integer sumAll = 0;
-                for (Map.Entry<String, Integer> e : topicVal.entrySet()) {
-                    sumAll += e.getValue();
+            // Iterate through all topics
+            for (Map.Entry topic : input.entrySet()) {
+
+                // If the topic is not yet in the output structure, add it
+                if (!(output.containsKey(topic.getKey()))) {
+                    output.put((String) topic.getKey(), new HashMap<String, Integer>());
                 }
 
-                // Write header information to file
-                writer.println("USER: " + userID + " TOPIC: " + topicID);
-                writer.println("USERID  TOPICID WORDID  WORDFRQ WORDDST");
+                // Iterate through all words
+                for (Map.Entry word : ((HashMap<String, Integer>) topic.getValue()).entrySet()) {
 
-                // Iterate through all user's topic's words in structure
-                for (Map.Entry wordEntry : topicVal.entrySet()) {
-                    String wordID = (String) wordEntry.getKey();
-                    Integer wordFreq = (Integer) wordEntry.getValue();
-
-                    // Calculate the distribution of each word within the topic
-                    Double wordDist = (double) wordFreq / (double) sumAll;
-
-                    // Write word information to file
-                    writer.println(userID + "\t" + topicID + "\t"
-                            + wordID + "\t" + wordFreq + "\t" + wordDist);
+                    // If the word's frequency is high enough to be added, add it
+                    if ((Integer) word.getValue() >= cutoff) {
+                        output.get(topic.getKey()).put((String) word.getKey(), (Integer) word.getValue());
+                    }
                 }
+            }
 
-                // Whitespace for output readability
-                writer.println();
+            // If the resultant matrix is empty (or worse, negative size), just return the original
+            if (getMaxWords(output) <= 0) {
+                return input;
+            } else {
+                return output;
             }
         }
+    }
+
+    /**
+     * Calculate and return the largest measure of words throughout the entire corpus of data from a
+     * single user. This will analyse any given number of topics and return the most words contained
+     * in any one topic.
+     *
+     * @param get
+     * @return The maximum number of words in a user's corpus of data
+     */
+    private static int getMaxWords(HashMap<String, HashMap<String, Integer>> get) {
+        int counter = 0;
+
+        // Iterate through all topics, counting number of words in each, returning largest count
+        for (Map.Entry topic : get.entrySet()) {
+            String t = (String) topic.getKey();
+
+            // If the current topic contains more elements than the previous largest, replace value
+            if (get.get(t).size() > counter) {
+                counter = get.get(t).size();
+            }
+        }
+        return counter;
     }
 
     /**
@@ -171,8 +206,28 @@ public class FrequencyStructure {
                     users.get(user).get(topicId).get(typeIndex) + 1);
 
             if (users.get(user).size() > numTopics) {
+                System.out.println(users.get(user).get(topicId).size());
                 numTopics = users.get(user).get(topicId).size();
             }
         }
+    }
+
+    private static int calcBiggest() {
+        int biggest = 0;
+        for (Map.Entry userEntry : users.entrySet()) {
+            HashMap<String, HashMap<String, Integer>> userVal
+                    = (HashMap<String, HashMap<String, Integer>>) userEntry.getValue();
+
+            // Iterate through all user's topics in structures
+            for (Map.Entry topicEntry : userVal.entrySet()) {
+                HashMap<String, Integer> topicVal
+                        = (HashMap<String, Integer>) topicEntry.getValue();
+
+                if (topicVal.size() > biggest) {
+                    biggest = topicVal.size();
+                }
+            }
+        }
+        return biggest;
     }
 }
