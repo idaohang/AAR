@@ -37,7 +37,7 @@ public class FrequencyMatrix {
         numTopics = topics;
 
         // Create two-dimensional array given number of topics (in entire corpus, not just input)
-        matrix = new double[numTopics][size];
+        matrix = new double[numTopics][size+1];
 
         // Fill elements of matrix
         populateMatrix();
@@ -64,8 +64,7 @@ public class FrequencyMatrix {
                 // Iterate through all words, adding to array
                 for (Map.Entry w : word.entrySet()) {
                     wordCount++;
-                    matrix[i][wordCount - 1] = new Double(getDist((int) w.getValue(),
-                            getNumOccurences(word)));
+                    matrix[i][Integer.parseInt(w.getKey().toString())] = new Double(getDist((int) w.getValue(), getNumOccurences(word)));
                 }
             } else {
 
@@ -86,7 +85,7 @@ public class FrequencyMatrix {
 
     /**
      * Calculate and return the number of occurrences (non-distinct word items) occurring within a
-     * single topic. A single word may be used many times, we want to count every occurring of this
+     * single topic. A single word may be used many times, we want to count every occurrence of this
      * word. This is achieved with frequency information. Result is used to calculate word
      * distribution within a given topic.
      *

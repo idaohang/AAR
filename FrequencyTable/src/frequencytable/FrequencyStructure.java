@@ -74,15 +74,17 @@ public class FrequencyStructure {
         // Calculate the largest matrix
         int biggest = calcBiggest();
 
+        int count = 0;
+        
         // Create matrix objects and write their form to text file
-        for (Map.Entry user : users.entrySet()) {
-
+        for (Map.Entry currentUser : users.entrySet()) {
+            count++;
             // Create, instantiate and add a Matrix object for each user
-            mat.put(user.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) user.getValue(), 10, biggest));
+            mat.put(currentUser.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) currentUser.getValue(), 10, biggest));
 
             // Output each user's Matrix
-            writer.println("USER: " + user.getKey());
-            writer.println(mat.get(user.toString()).toString());
+            writer.println("USER: " + currentUser.getKey());
+            writer.println(mat.get(currentUser.toString()).toString());
         }
     }
 
@@ -206,7 +208,6 @@ public class FrequencyStructure {
                     users.get(user).get(topicId).get(typeIndex) + 1);
 
             if (users.get(user).size() > numTopics) {
-                System.out.println(users.get(user).get(topicId).size());
                 numTopics = users.get(user).get(topicId).size();
             }
         }
@@ -223,8 +224,10 @@ public class FrequencyStructure {
                 HashMap<String, Integer> topicVal
                         = (HashMap<String, Integer>) topicEntry.getValue();
 
-                if (topicVal.size() > biggest) {
-                    biggest = topicVal.size();
+                for (Map.Entry wordEntry : topicVal.entrySet()) {
+                    if (biggest < Integer.parseInt(wordEntry.getKey().toString())) {
+                        biggest = Integer.parseInt(wordEntry.getKey().toString());
+                    }
                 }
             }
         }
