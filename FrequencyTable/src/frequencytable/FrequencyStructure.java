@@ -1,11 +1,17 @@
 package frequencytable;
 
+import Jama.Matrix;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -39,12 +45,19 @@ public class FrequencyStructure {
     private static PrintWriter writer;
 
     private static HashMap<String, FrequencyMatrix> mat;
+    
+    // Database variables
+    private static Connection con;
+    private static String JDBC_DRIVER = "com.mysql.jdbc.Driver",
+            DB_URL = "jdbc:mysql://localhost:3306/",
+            USER = "root",
+            PASS = "password";
 
     /**
      * @param args the command line arguments
      * @throws java.io.FileNotFoundException
      */
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException, SQLException {
 
         // Track and determine the number of topics (instead of hard-coding value)
         numTopics = 0;
@@ -83,9 +96,17 @@ public class FrequencyStructure {
             mat.put(currentUser.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) currentUser.getValue(), 10, biggest));
 
             // Output each user's Matrix
-            writer.println("USER: " + currentUser.getKey());
-            writer.println(mat.get(currentUser.toString()).toString());
+            //writer.println("USER: " + currentUser.getKey());
+            //writer.println(mat.get(currentUser.toString()).toString());
         }
+        
+        // open database connection
+        Class.forName(JDBC_DRIVER);
+        con = DriverManager.getConnection(DB_URL, USER, PASS);
+        
+        outputCosineSimilarity();
+        
+        con.close();
     }
 
     private static void trimSize() {
@@ -232,5 +253,100 @@ public class FrequencyStructure {
             }
         }
         return biggest;
+    }
+    
+    private static void outputCosineSimilarity() throws ClassNotFoundException, SQLException {         
+        createCosineSimilarityTable();
+        
+        // Set up prepared statement
+        PreparedStatement prepStatement = null;
+        String query = "INSERT INTO " + 
+                "capstone.cosine_similarity(USER_ID, COMPARISON_USER_ID, SIMILARITY) " + 
+                "VALUES (?, ?, ?)";
+        prepStatement = con.prepareStatement(query);
+        
+        // Compare all users to each other
+        for (Map.Entry user : mat.entrySet()) {
+            for (Map.Entry comparisonUser : mat.entrySet()) {
+                // Check users are not the same
+                if (user != comparisonUser) {
+                    double totalCosineSimilarity = 0;
+                    
+                    // Get users data as matrices
+                    FrequencyMatrix userFreqMat = (FrequencyMatrix) user.getValue();
+                    FrequencyMatrix compFreqMat = (FrequencyMatrix) comparisonUser.getValue();
+                    double[][] userData = userFreqMat.getMatrix();
+                    double[][] comparisonData = compFreqMat.getMatrix();
+                    
+                    // Get cosine similarity between users for each topic
+                    for (int i = 0; i < numTopics - 1; i++) {
+                        // Create matrices for just this row of user data
+                        Matrix userMatrix = new Matrix(userData[i], 1);
+                        Matrix comparisonMatrix = new Matrix(comparisonData[i], 1);
+                        
+                        // Compute cosine similarity
+                        CosineSimilarity cos = new CosineSimilarity();
+                        double thisSimilarity = cos.computeSimilarity(userMatrix, comparisonMatrix);
+                        
+                        // Add this similarity to total if it returned as a number
+                        if (!Double.isNaN(thisSimilarity)) {
+                            totalCosineSimilarity += thisSimilarity;
+                        }
+                    }
+                    
+                    double averageSimilarity = totalCosineSimilarity / numTopics;
+                    
+                    // Get user IDs, not sure why .getKey() doesn't work straight out of the box...
+                    String userKey = user.getKey().toString().substring(0, 
+                            user.getKey().toString().indexOf("="));
+                    String comparisonKey = comparisonUser.getKey().toString().substring(0, 
+                            comparisonUser.getKey().toString().indexOf("="));
+                    
+                    // add to prep statement
+                    // this if statement is required as sometimes the comparison/user key is "metrics"
+                    if (!comparisonKey.equals("metrics") && !userKey.equals("metrics")) {
+                        prepStatement.setInt(1, Integer.parseInt(userKey));
+                        prepStatement.setInt(2, Integer.parseInt(comparisonKey));
+                        prepStatement.setDouble(3, averageSimilarity);
+                        prepStatement.addBatch();
+                    }
+                }
+            }
+            
+            prepStatement.executeBatch();
+            
+        }
+    }
+    
+    /**
+     * Creates a table to store cosine similarity between users
+     * @throws ClassNotFoundException
+     * @throws SQLException 
+     */
+    private static void createCosineSimilarityTable() throws ClassNotFoundException, SQLException {
+        Statement statement = con.createStatement();
+
+        // Create the table
+        String sql = "DROP TABLE IF EXISTS capstone.cosine_similarity";
+        statement.executeUpdate(sql);
+        
+        sql = "CREATE TABLE capstone.cosine_similarity"
+                + "(USER_ID INTEGER NOT NULL,"
+                + "COMPARISON_USER_ID INTEGER NOT NULL,"
+                + "SIMILARITY DECIMAL(30, 30) NOT NULL,"
+                + "PRIMARY KEY (USER_ID, COMPARISON_USER_ID));";
+        statement.executeUpdate(sql);
+        
+    }
+
+    /**
+     * Adds a row to the cosine similarity table
+     * 
+     * @param user The user
+     * @param comparisonUser The user being compared to
+     * @param similarity The average similarity between users
+     */
+    private static void addSimilarityRow(String user, String comparisonUser, double similarity) {
+        
     }
 }
