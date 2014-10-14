@@ -93,7 +93,8 @@ public class FrequencyStructure {
         for (Map.Entry currentUser : users.entrySet()) {
             count++;
             // Create, instantiate and add a Matrix object for each user
-            mat.put(currentUser.toString(), new FrequencyMatrix((HashMap<String, HashMap<String, Integer>>) currentUser.getValue(), 10, biggest));
+            mat.put(currentUser.toString(), new FrequencyMatrix((HashMap<String, 
+                    HashMap<String, Integer>>) currentUser.getValue(), numTopics, biggest));
 
             // Output each user's Matrix
             //writer.println("USER: " + currentUser.getKey());
@@ -339,14 +340,4 @@ public class FrequencyStructure {
         
     }
 
-    /**
-     * Adds a row to the cosine similarity table
-     * 
-     * @param user The user
-     * @param comparisonUser The user being compared to
-     * @param similarity The average similarity between users
-     */
-    private static void addSimilarityRow(String user, String comparisonUser, double similarity) {
-        
-    }
 }
