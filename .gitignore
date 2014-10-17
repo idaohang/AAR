@@ -1,22 +1,23 @@
 # Ignore generated text files
-DataGeneration/userTags/
-DataGeneration/userCats/
-DataGeneration/mergedTagCatProfile/
+/DataGeneration/userTags/
+/DataGeneration/userCats/
+/DataGeneration/mergedTagCatProfile/
 
 # Ignore build output
-DataGeneration/build/
+/DataGeneration/build/
 
 # Did not ignore dist/ because includes MySQLConnector /J
 
 # Ignore some NetBeans files
-DataGeneration/nbproject/private/
-DataGeneration/dist/README.TXT
-/ItemBasedCF/nbproject/private/
-/ItemBasedCF/dist/README.TXT
+/DataGeneration/nbproject/private/
+/DataGeneration/dist/README.TXT
+/RecommendationEvaluation/nbproject/private/
+/RecommendationEvaluation/dist/README.TXT
 
 # Ignore some recommendation files
-/ItemBasedCF/*.bin
-/ItemBasedCF/metrics
+/RecommendationEvaluation/*.bin
+/RecommendationEvaluation/metrics
+/RecommendationEvaluation/engines
 
 /MovieLensSpike/*.bin
 /MovieLensSpike/metrics
@@ -28,9 +29,9 @@ DataGeneration/dist/README.TXT
 /LDA/mallet/*.mallet
 /LDA/mallet/*.gz
 
-/FrequencyTable/nbproject/private/
-/FrequencyTable/dist/
-/FrequencyTable/build/
+/WordBasedPatternMining/nbproject/private/
+/WordBasedPatternMining/dist/
+/WordBasedPatternMining/build/
 
 # Ignore generated text file, enforce rerun before use
-/FrequencyTable/*.txt
+/WordBasedPatternMining/*.txt
