@@ -1,4 +1,4 @@
-package frequencytable;
+package wordbasedpatternmining;
 
 import Jama.Matrix;
 import java.io.BufferedReader;

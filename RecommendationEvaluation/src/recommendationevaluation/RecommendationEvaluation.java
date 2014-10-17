@@ -165,7 +165,8 @@ public class RecommendationEvaluation {
             RecommenderBuildException {
          
         System.out.println("\n\n----Generating Metrics for " + neighbourhoodSize + 
-                " neighbours and " + totalRecommendations + " recommendations----");
+                " neighbours and " + totalRecommendations + " recommendations " + 
+                getAlgorithmName(algorithm) + "----");
         
         resetVariables();
         
