@@ -4,39 +4,47 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 /**
- * Entry point for DataGeneration project. Using command line arguments; a capstone DB can be
- * created and filled. A .dat file can also be created for each user, containing the tags they have
- * used.
+ * Entry point for DataGeneration project.
  *
- * @author Jordan
+ * Using command line arguments; a capstone DB can be created and filled. A .dat file can also be
+ * created for each user, containing the tags they have used.
+ *
+ * @author Jordan & Michael
  */
 public class DataGeneration {
 
-    // private variables
+    // Database connection instance
     private static final CapstoneDBConnection con = new CapstoneDBConnection();
-    private static final String[] datFiles = {"user_ratedmovies.dat", "user_taggedmovies.dat", 
-                                              "tags.dat", "movie_genres.dat"},
-                                  foldersToMerge = {"userTags", "userCats"};
+
+    // Files from which to retrieve information
+    private static final String[] datFiles = {"user_ratedmovies.dat", "user_taggedmovies.dat",
+        "tags.dat", "movie_genres.dat"},
+            foldersToMerge = {"userTags", "userCats"};
+
+    // If a merged folder is to be created, this will be its name
     private static final String nameOfMergedFolder = "mergedTagCatProfile";
+
+    // Parameters defining the extent of database creation and population to be performed
     private static String dBScope, dBStatus;
-    private static final double minIdealDataCount = 20;// min data count for users to be considered
-    
+
+    // Minimum data count for users to be considered
+    private static final double minIdealDataCount = 20;
 
     /**
-     * Main method with of 2 arguments, 
-     * arguments represents status of db of which user profile/s to generate
+     * Main insertion point for data generation, arguments represents status of db of which user
+     * profile/s to generate<p>
      *
-     * Argument 1 - scope: 
-     * cat - generate cat profile
-     * tag - generate tag profile
-     * all - generate profile encompassing all data in other profiles
-     * 
-     * Argument 2 - status:
-     * noDb - no db has been created 
-     * dbEmpty - db already exists but is empty 
-     * dbFull - db exists and is already filled with data
+     * <b>Argument 1 - Scope</b>:<br>
+     * <b>cat</b> - generate cat profile<br>
+     * <b>tag</b> - generate tag profile<br>
+     * <b>all</b> - generate profile encompassing all data in other profiles<p>
      *
-     * @param args the command line arguments
+     * <b>Argument 2 - Status</b>:<br>
+     * <b>noDb</b> - no db has been created<br>
+     * <b>dbEmpty</b> - db already exists but is empty<br>
+     * <b>dbFull</b> - db exists and is already filled with data
+     *
+     * @param args The command line arguments (expects two)
      * @throws java.io.IOException
      * @throws java.sql.SQLException
      */
@@ -72,32 +80,31 @@ public class DataGeneration {
 
             // database is filled with tag data -> export documents
             System.out.println("Exporting documents...");
-            
+
             // Create a Category or Tag Document object/s depending on the scope of the operation
             if (dBScope.equals("cat") || dBScope.equals("all")) {
                 CreateCategoryDocuments cd = new CreateCategoryDocuments(dBScope, con);
             }
-            
+
             if (dBScope.equals("tag") || dBScope.equals("all")) {
                 CreateTagsDocuments td = new CreateTagsDocuments(dBScope, con);
             }
-            
+
             System.out.println("DONE\n");
-            
+
             // merge documents and update ratings table if required
-             if (dBScope.equals("all")) {
+            if (dBScope.equals("all")) {
                 System.out.println("Merging documents...");
-                MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge, 
-                                                       minIdealDataCount);
+                MergeDocuments md = new MergeDocuments(nameOfMergedFolder, con, foldersToMerge,
+                        minIdealDataCount);
                 System.out.println("DONE\n");
 
                 System.out.println("Creating Final Ratings Table...");
                 FinaliseMovieRatings fmr = new FinaliseMovieRatings(con);
                 fmr.createFinalRatingsTable();
                 System.out.println("DONE\n");
-             }
-            
+            }
             con.shutDown();
-        }        
+        }
     }
 }

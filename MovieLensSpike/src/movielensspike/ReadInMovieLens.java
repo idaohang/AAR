@@ -16,6 +16,7 @@ import java.sql.Statement;
  * @author Jordan
  */
 public class ReadInMovieLens {
+    
     // DB connection
     private static Connection con;
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver",
@@ -24,8 +25,8 @@ public class ReadInMovieLens {
                                 PASS = "password";
     
     // location of the movie lens file
-    private static final String MOVIELENS_FILE = "movielens-10M.dat"; // 10M data set
-    // private static final String MOVIELENS_FILE = "movielens-100K.data"; // 100K movielens data set
+    private static final String MOVIELENS_FILE = "movielens-10M.dat"; // 10M dataset
+    // private static final String MOVIELENS_FILE = "movielens-100K.data"; // 100K movielens dataset
     
     // percentage of data that will be used for comparison
     private static final double comparisonDataPercentage = 30;

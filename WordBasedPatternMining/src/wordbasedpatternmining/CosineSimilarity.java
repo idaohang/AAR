@@ -5,6 +5,11 @@ package wordbasedpatternmining;
 
 import Jama.Matrix;
 
+/**
+ * Class to calculate the cosine similarity of two Matrix objects.
+ * 
+ * @author Jordan
+ */
 public class CosineSimilarity extends AbstractSimilarity {
 
     @Override

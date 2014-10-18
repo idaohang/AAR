@@ -8,7 +8,7 @@ import java.util.Map;
  * Defines, implements and populates a matrix (two-dimensional array) object based on a
  * parameterised HashMap object passed in construction.
  *
- * @author Clarky
+ * @author Michael
  */
 public class FrequencyMatrix {
 
@@ -23,7 +23,7 @@ public class FrequencyMatrix {
     private HashMap<String, HashMap<String, Integer>> in;
 
     /**
-     * Constructor. Instantiate two-dimensional array of required size
+     * Constructor. Instantiate two-dimensional array of required size.
      *
      * @param input HashMap of topics & words/frequencies
      * @param topics The number of topics intended for model
@@ -37,14 +37,14 @@ public class FrequencyMatrix {
         numTopics = topics;
 
         // Create two-dimensional array given number of topics (in entire corpus, not just input)
-        matrix = new double[numTopics][size+1];
+        matrix = new double[numTopics][size + 1];
 
         // Fill elements of matrix
         populateMatrix();
     }
 
     /**
-     * Populate the two-dimensional array of integers with word distributions
+     * Populate the two-dimensional array of integers with word distributions.
      */
     private void populateMatrix() {
 
@@ -64,7 +64,8 @@ public class FrequencyMatrix {
                 // Iterate through all words, adding to array
                 for (Map.Entry w : word.entrySet()) {
                     wordCount++;
-                    matrix[i][Integer.parseInt(w.getKey().toString())] = new Double(getDist((int) w.getValue(), getNumOccurences(word)));
+                    matrix[i][Integer.parseInt(w.getKey().toString())]
+                            = new Double(getDist((int) w.getValue(), getNumOccurences(word)));
                 }
             } else {
 
@@ -77,6 +78,8 @@ public class FrequencyMatrix {
     }
 
     /**
+     * Get the two-dimensional array representing the matrix
+     * 
      * @return The matrix object
      */
     public double[][] getMatrix() {
@@ -85,7 +88,9 @@ public class FrequencyMatrix {
 
     /**
      * Calculate and return the number of occurrences (non-distinct word items) occurring within a
-     * single topic. A single word may be used many times, we want to count every occurrence of this
+     * single topic.<p>
+     * 
+     * A single word may be used many times, we want to count every occurrence of this
      * word. This is achieved with frequency information. Result is used to calculate word
      * distribution within a given topic.
      *
@@ -112,8 +117,7 @@ public class FrequencyMatrix {
      * @return The distribution calculation for a word in a topic
      */
     private double getDist(int word, int totalWords) {
-        double r = (double) word / (double) totalWords;
-        return r;
+        return (double) word / (double) totalWords;
     }
 
     @Override

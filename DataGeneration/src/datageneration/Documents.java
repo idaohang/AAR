@@ -10,10 +10,10 @@ import java.sql.SQLException;
 /**
  * Abstract class that handles user documents for profiles and topic models
  * 
-* @author Jordan
+* @author Jordan & Michael
  */
 public abstract class Documents {
-    
+
     // Instance connection to the database
     private CapstoneDBConnection con;
 
@@ -21,9 +21,12 @@ public abstract class Documents {
     private static ResultSet userIds;
 
     /**
-     * Creates documents for each user and generates metrics
+     * Creates documents for each user and generates metrics.
      *
      * @param target What type of documents need to be created
+     * @param con Database connection instance
+     * @throws java.io.IOException
+     * @throws java.sql.SQLException
      */
     public Documents(String target, CapstoneDBConnection con) throws IOException, SQLException {
         this.con = con; // set connection field
@@ -45,6 +48,7 @@ public abstract class Documents {
      * @throws SQLException
      */
     protected int countUsers() throws SQLException {
+
         // Prepared statement for querying database
         PreparedStatement prepStatement;
 
@@ -68,7 +72,7 @@ public abstract class Documents {
     /**
      * Creates a directory
      *
-     * @param directoryName the name of the directory
+     * @param directoryName The name of the directory
      */
     protected void createDirectory(String directoryName) {
         File directory = new File(directoryName);
@@ -83,10 +87,11 @@ public abstract class Documents {
      * Collects all the user IDs and stores them in the userIds ResultSet
      */
     protected void collectUserIds() {
+
         // Prepared statement to query for user IDs
         PreparedStatement prepStatement;
 
-        // get all the unique user ids
+        // Get all the unique user ids
         try {
             prepStatement = con.getConnection().prepareStatement(
                     "SELECT DISTINCT USER_ID FROM capstone.movie_tags");
@@ -99,7 +104,7 @@ public abstract class Documents {
     /**
      * Getter method for connection
      *
-     * @return connection to the db
+     * @return Database connection instance
      */
     protected CapstoneDBConnection getDocumentsConnection() {
         return con;
@@ -125,9 +130,13 @@ public abstract class Documents {
     abstract protected void makeDocuments(String target) throws IOException, SQLException;
 
     /**
-     * Generate the document for the overall metrics of the data. The metrics include: The number of
-     * users, the largest amount of data for any one user, the smallest amount of data for any one
-     * user and the average amount of data across the entire userbase.
+     * Generate the document for the overall metrics of the data.<p>
+     *
+     * The metrics include:<br>
+     * <li>The number of users
+     * <li>The largest amount of data for any one user
+     * <li>The smallest amount of data for any one
+     * <li>The average amount of data across the entire userbase.<p>
      *
      * @throws FileNotFoundException File or filepath not found
      * @throws IOException

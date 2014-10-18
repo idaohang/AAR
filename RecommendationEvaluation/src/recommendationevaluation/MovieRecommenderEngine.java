@@ -25,55 +25,53 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 
 /**
- * Creates a RecommenderEngine for movie recommendations
+ * Creates a RecommenderEngine for movie recommendations.
  *
  * @author Jordan
  */
 public class MovieRecommenderEngine {
-    
+
     // Connection settings
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver",
-                                DB_URL = "jdbc:mysql://localhost:3306/",
-                                USER = "root",
-                                PASS = "password";
-    
+            DB_URL = "jdbc:mysql://localhost:3306/",
+            USER = "root",
+            PASS = "password";
+
     // Algorithms available to user
     private static final int ITEM_BASED_CF = 1,
-                             USER_BASED_CF = 2,
-                             LDA = 3, // latent dirichlet allocation
-                             WPM = 4; // word-based pattern mining
-    
+            USER_BASED_CF = 2,
+            LDA = 3, // latent dirichlet allocation
+            WPM = 4; // word-based pattern mining
+
     // Data sources: 1st - ratings data, 2nd - LDA data, 3rd - WPM data
-    private static final String dataSources[][] = new String[][] {
+    private static final String dataSources[][] = new String[][]{
         {"capstone.movie_ratings_final", "MOVIE_ID", "RATING_VAL", "USER_ID"},
         {"capstone.lda_composition", "TOPIC_ID", "TOPIC_DISTRIBUTION", "USER_ID"},
         {"capstone.cosine_similarity", "COMPARISON_USER_ID", "SIMILARITY", "USER_ID"}};
-     
+
     // dataSources indexes for algorithms
     private static final int DATA_RATINGS = 0,
-                             DATA_LDA = 1,
-                             DATA_WPM = 2;
-    
+            DATA_LDA = 1,
+            DATA_WPM = 2;
 
     // Indexes for items within dataSources
     private static final int TABLE_NAME = 0,
-                             ITEM_COLUMN = 1,
-                             RATING_COLUMN = 2,
-                             USER_COLUMN = 3;
+            ITEM_COLUMN = 1,
+            RATING_COLUMN = 2,
+            USER_COLUMN = 3;
 
     // The actual LenskitRecommenderEngine encapsulated
-    LenskitRecommenderEngine engine; 
-    
-    // The size of the neghbourhood
-    Integer neighbourhoodSize; 
+    LenskitRecommenderEngine engine;
 
-    
+    // The size of the neghbourhood
+    Integer neighbourhoodSize;
+
     /**
      * Constructor for a MovieRecommenderEngine creates a RecommenderEngine based upon a
-     * neighbourhood size
+     * neighbourhood size.
      *
-     * @param neighbourhoodSize the size of the neighbourhood for this RecommenderEngine
-     * @param algorithm which algorithm to generate recommendations from
+     * @param neighbourhoodSize The size of the neighbourhood for this RecommenderEngine
+     * @param algorithm Which algorithm to generate recommendations from
      * @throws java.lang.ClassNotFoundException
      * @throws java.sql.SQLException
      * @throws org.grouplens.lenskit.RecommenderBuildException
@@ -82,59 +80,60 @@ public class MovieRecommenderEngine {
             throws ClassNotFoundException, SQLException, RecommenderBuildException {
 
         this.neighbourhoodSize = neighbourhoodSize;
-        
+
         LenskitConfiguration config = createConfiguration(neighbourhoodSize, algorithm);
 
         engine = createRecommenderEngine(config, algorithm);
     }
-    
+
     /**
-     * Writes this recommender engine to file
-     * 
-     * @param algorithm the algorithm used for this engine
+     * Writes this recommender engine to file.
+     *
+     * @param algorithm The algorithm used for this engine
      * @throws java.io.IOException
      */
     public void writeToFile(Integer algorithm) throws IOException {
+
         // Create folder for engines if doesn't already exist
         File dir = new File("engines");
-        
+
         if (!dir.exists()) {
             dir.mkdir();
         }
-        
+
         // Serialise engine
         engine.write(new File(getEngineName(algorithm, neighbourhoodSize)));
     }
-    
+
     /**
-     * Gets the name of an engine file based upon an algorithm and neighbourhood size
-     * 
-     * @param algorithm the algorithm as an index
-     * @param neighbourhoodSize the neighbourhood size
-     * @return the name of the engine
+     * Gets the name of an engine file based upon an algorithm and neighbourhood size.
+     *
+     * @param algorithm The algorithm as an index
+     * @param neighbourhoodSize The neighbourhood size
+     * @return The name of the engine
      */
     public static String getEngineName(Integer algorithm, Integer neighbourhoodSize) {
         return "engines/engine-" + getAlgorithmName(algorithm) + "neighbours" + neighbourhoodSize + ".bin";
     }
 
     /**
-     * Returns the engine encapsulated by this class
+     * Returns the engine encapsulated by this class.
      *
      * @return the movie recommender engine
      */
     public LenskitRecommenderEngine getEngine() {
         return engine;
     }
-    
+
     /**
      * Gets the name of an algorithm based upon it's index
-     * 
-     * @param algorithm the index of the algorithm a name is required for
-     * @return the name of the algorithm
+     *
+     * @param algorithm The index of the algorithm a name is required for
+     * @return The name of the algorithm
      */
     public static String getAlgorithmName(int algorithm) {
         String algorithmName = "";
-        
+
         if (algorithm == MovieRecommenderEngine.ITEM_BASED_CF) {
             algorithmName = "ItemBasedCF";
         } else if (algorithm == MovieRecommenderEngine.USER_BASED_CF) {
@@ -144,10 +143,9 @@ public class MovieRecommenderEngine {
         } else if (algorithm == MovieRecommenderEngine.WPM) {
             algorithmName = "WPM";
         }
-        
         return algorithmName;
     }
-    
+
     /**
      * Creates and returns a Data Access Object for the database
      *
@@ -156,9 +154,9 @@ public class MovieRecommenderEngine {
      * @throws ClassNotFoundException
      * @throws SQLException
      */
-    public static JDBCRatingDAO createDAO(Integer algorithm) 
+    public static JDBCRatingDAO createDAO(Integer algorithm)
             throws ClassNotFoundException, SQLException {
-        
+
         // private variables
         Connection con; // connection to db
         JDBCRatingDAO dao; // data access object
@@ -180,14 +178,14 @@ public class MovieRecommenderEngine {
             daoBuilder.setItemColumn(dataSources[DATA_LDA][ITEM_COLUMN]);
             daoBuilder.setRatingColumn(dataSources[DATA_LDA][RATING_COLUMN]);
             daoBuilder.setUserColumn(dataSources[DATA_LDA][USER_COLUMN]);
-            
+
         } else if (algorithm == WPM) {
             daoBuilder.setTableName(dataSources[DATA_WPM][TABLE_NAME]);
             daoBuilder.setItemColumn(dataSources[DATA_WPM][ITEM_COLUMN]);
             daoBuilder.setRatingColumn(dataSources[DATA_WPM][RATING_COLUMN]);
             daoBuilder.setUserColumn(dataSources[DATA_WPM][USER_COLUMN]);
         }
-        
+
         daoBuilder.setTimestampColumn(null); // no timestamps
 
         // Initialise DAO with connection and DAO builder
@@ -197,11 +195,11 @@ public class MovieRecommenderEngine {
 
         return dao;
     }
-    
+
     /**
-     * Creates and returns a Data Access Object for the ratings data in the database
+     * Creates and returns a Data Access Object (DAO) for the ratings data in the database
      *
-     * @return the DAO
+     * @return The DAO
      * @throws ClassNotFoundException
      * @throws SQLException
      */
@@ -210,13 +208,13 @@ public class MovieRecommenderEngine {
     }
 
     /**
-     * Sets up and returns a LenskitConfiguration for item-item CF
+     * Sets up and returns a LenskitConfiguration for item-based CF
      *
-     * @param neighbourhoodSize the size of the neighbourhood for this configuration
-     * @param algorithm which algorithm to use
-     * @return the configuration
+     * @param neighbourhoodSize The size of the neighbourhood for this configuration
+     * @param algorithm Which algorithm to use
+     * @return The configuration
      */
-    private static LenskitConfiguration createConfiguration(Integer neighbourhoodSize, 
+    private static LenskitConfiguration createConfiguration(Integer neighbourhoodSize,
             Integer algorithm) throws ClassNotFoundException, SQLException {
 
         LenskitConfiguration config = new LenskitConfiguration(); // config for recommender
@@ -239,36 +237,37 @@ public class MovieRecommenderEngine {
 
         // Set neighbourhood size
         config.set(NeighborhoodSize.class).to(neighbourhoodSize);
-        
+
         return config;
     }
 
     /**
      * Builds and returns a RecommenderEngine that is free from a DAO
      *
-     * @param config the configuration containing only recommendation configuration (not DAO)
-     * @param algorithm which algorithm to generate recommendations from
-     * @return the DAO free RecommenderEngine
+     * @param config The configuration containing only recommendation configuration (not DAO)
+     * @param algorithm Which algorithm to generate recommendations from
+     * @return The DAO free RecommenderEngine
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws RecommenderBuildException
      */
-    private LenskitRecommenderEngine createRecommenderEngine(LenskitConfiguration config, 
-            Integer algorithm) throws ClassNotFoundException, SQLException, 
+    private LenskitRecommenderEngine createRecommenderEngine(LenskitConfiguration config,
+            Integer algorithm) throws ClassNotFoundException, SQLException,
             RecommenderBuildException {
 
-        // private variables
+        // Private variables
         JDBCRatingDAO dao = createDAO(algorithm);
-        LenskitConfiguration dataConfig = new LenskitConfiguration(); // config to hold dao
+
+        // Config to hold DAO
+        LenskitConfiguration dataConfig = new LenskitConfiguration();
         LenskitRecommenderEngine recommenderEngine;
 
         dataConfig.addComponent(dao);
 
-        // build engine, with placeholder DAOs
+        // Build engine, with placeholder DAOs
         recommenderEngine = LenskitRecommenderEngine.newBuilder().addConfiguration(config)
                 .addConfiguration(dataConfig, ModelDisposition.EXCLUDED).build();
 
         return recommenderEngine;
     }
-
 }

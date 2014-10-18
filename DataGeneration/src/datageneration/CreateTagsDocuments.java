@@ -21,7 +21,14 @@ public class CreateTagsDocuments extends CreateDocuments {
             maxTags = 0,
             minTags = Double.MAX_VALUE;
 
-    // Constructor; only calls superconstructor
+    /**
+     * Constructor. Passes parameters to super.
+     *
+     * @param target What type of documents need to be created
+     * @param con Database connection instance
+     * @throws IOException
+     * @throws SQLException
+     */
     CreateTagsDocuments(String target, CapstoneDBConnection con) throws IOException, SQLException {
         super(target, con);
     }
@@ -46,50 +53,40 @@ public class CreateTagsDocuments extends CreateDocuments {
     @Override
     void createUserDocument(int uID, ResultSet result) throws IOException, SQLException {
 
-        // Go to last row of result
-        //result.last();
+        // Reset to before the first row for iterating
+        result.beforeFirst();
 
-        // Check if the row is less than the 10th row
-        // If it is less than 10, don't generate anything
-        //if (!(result.getRow() < 5)) {
-            
-            // Reset to before the first row for iterating
-            result.beforeFirst();
-            
-            PrintWriter writer;
+        // Writer object to create and populate files
+        PrintWriter writer;
 
-            // Set path and name of file
-            File userDocument = new File("userTags/" + uID + ".dat");
+        // Set path and name of file
+        File userDocument = new File("userTags/" + uID + ".dat");
 
-            // Total tags this user has used
-            int tagCounter = 0;
+        // Total tags this user has used
+        int tagCounter = 0;
 
-            // Create file for user
-            userDocument.createNewFile();
-            writer = new PrintWriter(userDocument);
+        // Create file for user
+        userDocument.createNewFile();
+        writer = new PrintWriter(userDocument);
 
-            // Write each tag to file, with one tag per line
-            while (result.next()) {
-                writer.println(result.getString("TAG_VAL"));
+        // Write each tag to file, with one tag per line
+        while (result.next()) {
+            writer.println(result.getString("TAG_VAL"));
 
-                // Increment counters
-                tagCounter++;
-                totalTags++;
-            }
-            
-            // Increment total users counter
-            //totalUsers++;
+            // Increment counters
+            tagCounter++;
+            totalTags++;
+        }
 
-            // Close writer
-            writer.close();
+        // Close writer
+        writer.close();
 
-            // Check if this user has the most or least tags, if so set the max/min counters
-            if (tagCounter > maxTags) {
-                maxTags = tagCounter;
-            } else if (tagCounter < minTags) {
-                minTags = tagCounter;
-            }
-        //}
+        // Check if this user has the most or least tags, if so set the max/min counters
+        if (tagCounter > maxTags) {
+            maxTags = tagCounter;
+        } else if (tagCounter < minTags) {
+            minTags = tagCounter;
+        }
     }
 
     @Override
@@ -97,6 +94,7 @@ public class CreateTagsDocuments extends CreateDocuments {
         // Calculate and store the total number of users across the system
         totalUsers = countUsers();
 
+        // Create a file to store metrics in
         File metricsDocument = new File("userTags/metrics.dat");
 
         // Create file for the metrics

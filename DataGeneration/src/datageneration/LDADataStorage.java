@@ -1,21 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package datageneration;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- *
- * @author Clarky
+ * Store output of LDA execution in the database.<p>
+ * 
+ * This class is a utility class and not part of the main data generation class' functionality.
+ * 
+ * @author Jordan & Michael
  */
 public class LDADataStorage {
 
+    // Database connection instance
     private static CapstoneDBConnection con;
 
     // Files to insert into database
@@ -24,6 +24,7 @@ public class LDADataStorage {
 
     public static void main(String[] args) throws SQLException {
 
+        // Connection instance
         con = new CapstoneDBConnection();
 
         // Create tables for LDA data
@@ -45,6 +46,14 @@ public class LDADataStorage {
 
     }
 
+    /**
+     * Dynamically generate prepared statement based on parameters
+     *
+     * @param query The SQL query string
+     * @param location The filepath to be written to
+     * @param prepStatement Statement object to be returned
+     * @return
+     */
     private static PreparedStatement setupPreparedStatement(String query, String location,
             PreparedStatement prepStatement) {
         try {
@@ -52,6 +61,7 @@ public class LDADataStorage {
             BufferedReader reader = new BufferedReader(new FileReader(location));
             int columns = query.length() - query.replace("?", "").length();
             prepStatement = con.getConnection().prepareStatement(query);
+
             line = reader.readLine();
 
             while ((line = reader.readLine()) != null) {
@@ -71,18 +81,18 @@ public class LDADataStorage {
                         String[] userNameParts = parts[1].split("/");
                         userID = userNameParts[userNameParts.length - 1];
                         userID = userID.substring(0, userID.indexOf("."));
-                        
+
                         // Don't process metrics
-                        if (userID.equals("metrics")){
+                        if (userID.equals("metrics")) {
                             break;
                         } else {
-                            
+
                             // Set user ID in prepared statement
                             prepStatement.setString(1, userID);
-                            
+
                             // Track where (in the split row of results) we are currently looking
                             int point = 2;
-                            
+
                             // For the length of the split results, assign every other result 
                             // between each of topic_id and topic_distribution
                             while (point < parts.length) {
@@ -90,16 +100,15 @@ public class LDADataStorage {
                                 point++;
                                 prepStatement.setString(3, parts[point]);
                                 point++;
-                                
+
                                 prepStatement.addBatch();
                             }
                             break;
                         }
                 }
             }
-
             return prepStatement;
-        } catch (Exception e) {
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
         return prepStatement;

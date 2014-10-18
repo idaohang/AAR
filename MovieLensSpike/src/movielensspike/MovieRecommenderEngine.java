@@ -25,25 +25,28 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
  * @author Jordan
  */
 public class MovieRecommenderEngine {
-    // public constants
+
+    // Public constants
     public static final String START_ENGINE_NAME = "engine-", // start of file name
-                               END_ENGINE_NAME = "neighbours.bin"; // end of file name
-    
+            END_ENGINE_NAME = "neighbours.bin"; // end of file name
+
     // Connection settings
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver",
-                                DB_URL = "jdbc:mysql://localhost:3306/",
-                                USER = "root",
-                                PASS = "password";
+            DB_URL = "jdbc:mysql://localhost:3306/",
+            USER = "root",
+            PASS = "password";
 
-    LenskitRecommenderEngine engine; // the actual LenskitRecommenderEngine encapsulated
-    
-    Integer neighbourhoodSize; // the size of the neghbourhood
+    // The actual LenskitRecommenderEngine encapsulated
+    LenskitRecommenderEngine engine;
+
+    // The size of the neghbourhood
+    Integer neighbourhoodSize; 
 
     /**
      * Constructor for a MovieRecommenderEngine creates a RecommenderEngine based upon a
-     * neighbourhood size
+     * neighbourhood size.
      *
-     * @param neighbourhoodSize the size of the neighbourhood for this RecommenderEngine
+     * @param neighbourhoodSize The size of the neighbourhood for this RecommenderEngine
      * @throws java.lang.ClassNotFoundException
      * @throws java.sql.SQLException
      * @throws org.grouplens.lenskit.RecommenderBuildException
@@ -52,15 +55,15 @@ public class MovieRecommenderEngine {
             throws ClassNotFoundException, SQLException, RecommenderBuildException {
 
         this.neighbourhoodSize = neighbourhoodSize;
-        
+
         LenskitConfiguration config = createConfiguration(neighbourhoodSize);
 
         engine = createRecommenderEngine(config);
     }
-    
+
     /**
      * Writes this recommender engine to file
-     * 
+     *
      * @throws java.io.IOException
      */
     public void writeToFile() throws IOException {
@@ -70,17 +73,16 @@ public class MovieRecommenderEngine {
     /**
      * Returns the engine encapsulated by this class
      *
-     * @return the movie recommender engine
+     * @return The movie recommender engine
      */
     public LenskitRecommenderEngine getEngine() {
         return engine;
     }
-    
-    
+
     /**
-     * Creates and returns a Data Access Object for the database
+     * Creates and returns a Data Access Object (DAO) for the database
      *
-     * @return the DAO
+     * @return The DAO
      * @throws ClassNotFoundException
      * @throws SQLException
      */
@@ -110,8 +112,8 @@ public class MovieRecommenderEngine {
     /**
      * Sets up and returns a LenskitConfiguration for item-item CF
      *
-     * @param neighbourhoodSize
-     * @return the configuration
+     * @param neighbourhoodSize The neighbourhood size
+     * @return The configuration
      */
     private static LenskitConfiguration createConfiguration(Integer neighbourhoodSize)
             throws ClassNotFoundException, SQLException {
@@ -120,10 +122,10 @@ public class MovieRecommenderEngine {
 
         // Use item-item CF to score items
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
-        
+
         // Set up baseline predictor
         config.bind(BaselineScorer.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
-    
+
         // Use the baseline for normalizing user ratings
         config.bind(UserVectorNormalizer.class).to(BaselineSubtractingUserVectorNormalizer.class);
 
@@ -134,10 +136,10 @@ public class MovieRecommenderEngine {
     }
 
     /**
-     * Builds and returns a RecommenderEngine that is free from a DAO
+     * Builds and returns a RecommenderEngine that is free from a DAO.
      *
-     * @param config the configuration containing only recommendation configuration (not DAO)
-     * @return the DAO free RecommenderEngine
+     * @param config The configuration containing only recommendation configuration (not DAO)
+     * @return The DAO free RecommenderEngine
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws RecommenderBuildException

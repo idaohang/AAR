@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package datageneration;
 
 import java.io.BufferedReader;
@@ -140,9 +135,6 @@ public class ReadInDat {
 
         // Remove all spaces
         output = output.replaceAll("\\s", "");
-
-        // Remove all other non-word character (punctuation etc.)
-        //output = output.replaceAll("\\W", "");
 
         return output;
     }

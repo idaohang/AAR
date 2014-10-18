@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package datageneration;
 
 import java.sql.Connection;
@@ -51,6 +46,9 @@ public class CapstoneDBConnection {
         return con;
     }
 
+    /**
+     * Create tables for storing LDA (Mallet) output
+     */
     public void createLDATables() {
         try {
             // Create the database
@@ -95,7 +93,7 @@ public class CapstoneDBConnection {
             sql = "CREATE DATABASE capstone";
             statement.executeUpdate(sql);
 
-            // Create the table(s)
+            // Create the table tags table
             statement = con.createStatement();
             sql = "CREATE TABLE capstone.tags "
                     + "(TAG_ID INTEGER NOT NULL, "
@@ -103,6 +101,7 @@ public class CapstoneDBConnection {
                     + "PRIMARY KEY(TAG_ID));";
             statement.executeUpdate(sql);
 
+            // Create the movie tags table
             sql = "CREATE TABLE capstone.movie_tags "
                     + "(USER_ID INTEGER NOT NULL, "
                     + "MOVIE_ID INTEGER NOT NULL, "
@@ -110,6 +109,7 @@ public class CapstoneDBConnection {
                     + "PRIMARY KEY(USER_ID, MOVIE_ID, TAG_ID));";
             statement.executeUpdate(sql);
 
+            // Create the movie genres table
             sql = "CREATE TABLE capstone.movie_genres"
                     + "(MOVIE_ID INTEGER NOT NULL,"
                     + "GENRE_VAL VARCHAR(100) NOT NULL,"

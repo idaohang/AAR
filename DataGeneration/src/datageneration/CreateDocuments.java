@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * Abstract class templates each of the different forms of data the system will extract from the
  * database.
  * 
-* @author Clarky
+* @author Jordan & Michael
  */
 public abstract class CreateDocuments extends Documents {
 
@@ -31,9 +31,11 @@ public abstract class CreateDocuments extends Documents {
      *
      * @param target The type of documents to be generated
      * @throws IOException
+     * @throws java.sql.SQLException
      */
     @Override
     protected void makeDocuments(String target) throws IOException, SQLException {
+        
         // Create the directory in which to place the files
         createDirectory(target);
 

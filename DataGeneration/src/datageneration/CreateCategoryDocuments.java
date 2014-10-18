@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package datageneration;
 
 import java.io.File;
@@ -15,7 +10,7 @@ import java.sql.SQLException;
 
 /**
  * Creates a document for each user that shows all the categories of movies they've watched in a
- * random order
+ * random order.
  *
  * @author Jordan & Michael
  */
@@ -27,7 +22,14 @@ public class CreateCategoryDocuments extends CreateDocuments {
             maxCats = 0,
             minCats = Double.MAX_VALUE;
 
-    // Constructor; only calls superconstructor
+    /**
+     * Constructor. Passes parameters to super.
+     *
+     * @param target What type of documents need to be created
+     * @param con Database connection instance
+     * @throws IOException
+     * @throws SQLException
+     */
     public CreateCategoryDocuments(String target, CapstoneDBConnection con) throws IOException, SQLException {
         super(target, con);
     }
@@ -53,50 +55,40 @@ public class CreateCategoryDocuments extends CreateDocuments {
     @Override
     void createUserDocument(int uID, ResultSet result) throws IOException, SQLException {
 
-        // Go to last row of result
-        //result.last();
+        // Reset to before the first row for iterating        
+        result.beforeFirst();
 
-        // Check if the row is less than the 10th row
-        // If it is less than 10, don't generate anything
-        //if (!(result.getRow() < 5)) {
+        // Writer object to create and populate files
+        PrintWriter writer;
 
-            // Reset to before the first row for iterating
-            result.beforeFirst();
+        // Set path and name of new file
+        File userDocument = new File("userCats/" + uID + ".dat");
 
-            PrintWriter writer;
+        // Total categories viewed by this user 
+        int catCounter = 0;
 
-            // Set path and name of new file
-            File userDocument = new File("userCats/" + uID + ".dat");
+        // Create file for user
+        userDocument.createNewFile();
+        writer = new PrintWriter(userDocument);
 
-            // Total categories viewed by this user 
-            int catCounter = 0;
+        // Write each tag to file, with one category per line
+        while (result.next()) {
+            writer.println(result.getString("GENRE_VAL"));
 
-            // Create file for user
-            userDocument.createNewFile();
-            writer = new PrintWriter(userDocument);
+            // Increment counters
+            catCounter++;
+            totalCats++;
+        }
 
-            // Write each tag to file, with one category per line
-            while (result.next()) {
-                writer.println(result.getString("GENRE_VAL"));
+        // Close writer
+        writer.close();
 
-                // Increment counters
-                catCounter++;
-                totalCats++;
-            }
-            
-            // Increment total users counter
-            //totalUsers++;
-
-            // Close writer
-            writer.close();
-
-            // Check if this user has the most or least categories, if so set the max/min counters
-            if (catCounter > maxCats) {
-                maxCats = catCounter;
-            } else if (catCounter < minCats) {
-                minCats = catCounter;
-            }
-        //}
+        // Check if this user has the most or least categories, if so set the max/min counters
+        if (catCounter > maxCats) {
+            maxCats = catCounter;
+        } else if (catCounter < minCats) {
+            minCats = catCounter;
+        }
     }
 
     @Override
@@ -104,6 +96,7 @@ public class CreateCategoryDocuments extends CreateDocuments {
         // Calculate and store the total number of users across the system
         totalUsers = countUsers();
 
+        // Create a file to store metrics in
         File metricsDocument = new File("userCats/metrics.dat");
 
         // Create file for the metrics

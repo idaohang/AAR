@@ -35,3 +35,4 @@
 
 # Ignore generated text file, enforce rerun before use
 /WordBasedPatternMining/*.txt
+/MovieLensSpike/dist/

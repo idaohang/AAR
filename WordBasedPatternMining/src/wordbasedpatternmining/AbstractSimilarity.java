@@ -25,6 +25,11 @@ public abstract class AbstractSimilarity implements Transformer<Matrix, Matrix> 
         return similarityMatrix;
     }
 
-    protected abstract double computeSimilarity(
-            Matrix sourceDoc, Matrix targetDoc);
+    /**
+     * Given two matrices, calculate the cosine similarity of the objects relative to each other.
+     * @param sourceDoc A matrix object
+     * @param targetDoc A comparison matrix object
+     * @return Similarity calculation
+     */
+    protected abstract double computeSimilarity(Matrix sourceDoc, Matrix targetDoc);
 }

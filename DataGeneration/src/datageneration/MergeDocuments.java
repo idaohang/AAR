@@ -12,9 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Merges documents together to create a user topic model
+ * Merges documents together to create an overall user profile across both tags and ratings in the
+ * database.
  *
- * @author Jordan
+ * @author Jordan & Michael
  */
 public class MergeDocuments extends Documents {
 
@@ -31,7 +32,7 @@ public class MergeDocuments extends Documents {
             minDataPieces = Double.MAX_VALUE,
             lessThanMinIdealCount = 0;
     private static double minIdealDataCount; // minimum required data count per user
-    
+
     // users with at least the min required data cound
     private static ArrayList<Integer> idealUsers = new ArrayList<Integer>();
 
@@ -39,18 +40,18 @@ public class MergeDocuments extends Documents {
      * Merges some documents together into one file
      *
      * @param target What type of documents need to be created
-     * @param con connection to database
-     * @param profiles which profiles to include when merging
-     * @param minIdealDataCount min ideal data count for users to be considered
+     * @param con Connection to database
+     * @param profiles Which profiles to include when merging
+     * @param minIdealDataCount Min ideal data count for users to be considered
      * @throws IOException
      * @throws SQLException
      */
-    public MergeDocuments(String target, CapstoneDBConnection con, String[] profiles, 
+    public MergeDocuments(String target, CapstoneDBConnection con, String[] profiles,
             double minIdealDataCount) throws IOException, SQLException {
-        // set up MergeDocuments and then send to super constructor
-        // call to super must be first operation called, so call a 'set up' method as a parameter
-        // TODO - probably better to separate construction from functionality
-        super(setUpReturnTarget(target, profiles, minIdealDataCount), con); // super hack to the rescue!!!       
+        
+        // Set up MergeDocuments and then send to super constructor
+        // Call to super must be first operation called, so call a 'set up' method as a parameter
+        super(setUpReturnTarget(target, profiles, minIdealDataCount), con);       
     }
 
     @Override
@@ -87,24 +88,25 @@ public class MergeDocuments extends Documents {
     }
 
     /**
-     * Returns a list of the ideal users
+     * Returns a list of the ideal users.
+     *
      * @return all the ideal users
      */
     public static ArrayList<Integer> getIdealUsers() {
         return idealUsers;
     }
-    
+
     /**
-     * Collects and returns all the relevant data for a user
+     * Collects and returns all the relevant data for a user.
      *
      * @param userId the id of the user to collect data for
      * @return a shuffled ArrayList of data, with one piece of data at each index
      * @throws IOException
      */
     private ArrayList<String> getAllUserData(int userId) throws IOException {
-        ArrayList<String> userData = new ArrayList<String>();
+        ArrayList<String> userData = new ArrayList<>();
 
-        // collect data from each profile
+        // Collect data from each profile
         for (String profile : profiles) {
             String line;
 
@@ -117,8 +119,8 @@ public class MergeDocuments extends Documents {
                 userData.add(line);
             }
         }
-
-        // shuffle data
+        
+        // Shuffle data
         Collections.shuffle(userData);
 
         return userData;
@@ -126,9 +128,10 @@ public class MergeDocuments extends Documents {
 
     /**
      * Create document for a user if they have enough data
+     *
      * @param userID the id of the user to create a document for
      * @param userData a list of the user's data
-     * @throws IOException 
+     * @throws IOException
      */
     private void createUserDocument(int userID, ArrayList<String> userData) throws IOException {
         PrintWriter writer;
@@ -148,14 +151,14 @@ public class MergeDocuments extends Documents {
             // Write each tag to file, with one tag per line
             for (String dataPiece : userData) {
                 writer.println(dataPiece);
-                
+
                 // Increment counters
                 totalDataCount++;
             }
-            
+
             // Increment users counter
             totalUsers++;
-            
+
             // this is an ideal user, add to list
             idealUsers.add(userID);
 
@@ -186,7 +189,7 @@ public class MergeDocuments extends Documents {
      * @param mergeProfiles the profiles to be merged
      * @return
      */
-    private static String setUpReturnTarget(String mergeTarget, String[] mergeProfiles, 
+    private static String setUpReturnTarget(String mergeTarget, String[] mergeProfiles,
             double idealDataCount) {
         // update fields, even though 'this' techinically doesn't exist yet
         target = mergeTarget;
