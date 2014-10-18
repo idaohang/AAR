@@ -82,7 +82,7 @@ public class ReadInDat {
      *
      * @param location the location of the file to be read from
      * @param prepStatement the prepared statement object
-     * @return
+     * @return The correct prepared statement
      */
     private PreparedStatement setupPreparedStatement(String query, String location,
             PreparedStatement prepStatement) {

@@ -52,7 +52,7 @@ public class LDADataStorage {
      * @param query The SQL query string
      * @param location The filepath to be written to
      * @param prepStatement Statement object to be returned
-     * @return
+     * @return The correct prepared statement
      */
     private static PreparedStatement setupPreparedStatement(String query, String location,
             PreparedStatement prepStatement) {

@@ -187,10 +187,11 @@ public class MergeDocuments extends Documents {
      *
      * @param mergeTarget target for documents
      * @param mergeProfiles the profiles to be merged
-     * @return
+     * @return Target for merging
      */
     private static String setUpReturnTarget(String mergeTarget, String[] mergeProfiles,
             double idealDataCount) {
+        
         // update fields, even though 'this' techinically doesn't exist yet
         target = mergeTarget;
         profiles = mergeProfiles;

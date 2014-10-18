@@ -6,6 +6,12 @@ package wordbasedpatternmining;
 import org.apache.commons.collections15.Transformer;
 import Jama.Matrix;
 
+/**
+ * Abstract class for calculating similarity between Matrix objects.<p>
+ * 
+ * Transforms matrices and computes the similarity between them. 
+ * @author Jordan
+ */
 public abstract class AbstractSimilarity implements Transformer<Matrix, Matrix> {
 
     @Override

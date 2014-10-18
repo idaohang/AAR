@@ -258,7 +258,7 @@ public class WordBasedPatternMining {
      * This requires all matrices to be as wide as the largest ID present in the database, so the
      * highest ID must be found and passed to the matrices upon creation.
      *
-     * @return
+     * @return The biggest ID found in the data
      */
     private static int calcBiggest() {
         int biggest = 0;
