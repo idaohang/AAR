@@ -95,7 +95,7 @@ public class MovieRecommenderEngine {
     public void writeToFile(Integer algorithm) throws IOException {
 
         // Create folder for engines if doesn't already exist
-        File dir = new File("engines");
+        File dir = new File("RecommendationEvaluation/engines");
 
         if (!dir.exists()) {
             dir.mkdir();
