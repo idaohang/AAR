@@ -397,10 +397,15 @@ public class RecommendationEvaluation {
      */
     private static void initialiseDirectories(Integer algorithm, Integer neighbourhoodSize,
             Integer totalRecommendations) {
-        File rootMetricsDirectory = new File("metrics");
-        File metricsDirectory = new File("metrics/" + getAlgorithmName(algorithm));
-        File thisRecommendationDirectory = new File("metrics/" + getAlgorithmName(algorithm)
-                + "/neighbours" + neighbourhoodSize + "top" + totalRecommendations + "/");
+        
+        File rootMetricsDirectory = new File("RecommendationEvaluation/metrics");
+        
+        File metricsDirectory = new File("RecommendationEvaluation/metrics/" + 
+                getAlgorithmName(algorithm));
+        
+        File thisRecommendationDirectory = new File("RecommendationEvaluation/metrics/" + 
+                getAlgorithmName(algorithm)+ "/neighbours" + neighbourhoodSize + 
+                "top" + totalRecommendations + "/");
 
         // If the directories do not exist then create them
         if (!rootMetricsDirectory.exists()) {
@@ -431,8 +436,9 @@ public class RecommendationEvaluation {
             Integer totalRecommendations) throws FileNotFoundException, IOException {
 
         // File to be written to for user
-        File userDocument = new File("metrics/" + getAlgorithmName(algorithm) + "/neighbours"
-                + neighbourhoodSize + "top" + totalRecommendations + "/" + userId + ".dat");
+        File userDocument = new File("RecommendationEvaluation/metrics/" + 
+                getAlgorithmName(algorithm) + "/neighbours"+ neighbourhoodSize + 
+                "top" + totalRecommendations + "/" + userId + ".dat");
 
         PrintWriter writer;
 
@@ -467,8 +473,9 @@ public class RecommendationEvaluation {
             throws FileNotFoundException, IOException, SQLException {
 
         // File to be written to for user
-        File metricsDocument = new File("metrics/" + getAlgorithmName(algorithm) + "/neighbours"
-                + neighbourhoodSize + "top" + totalRecommendations + "/average.dat");
+        File metricsDocument = new File("RecommendationEvaluation/metrics/" + 
+                getAlgorithmName(algorithm) + "/neighbours" + neighbourhoodSize + 
+                "top" + totalRecommendations + "/average.dat");
 
         PrintWriter writer;
         double userCount;
