@@ -113,7 +113,8 @@ public class MovieRecommenderEngine {
      * @return The name of the engine
      */
     public static String getEngineName(Integer algorithm, Integer neighbourhoodSize) {
-        return "engines/engine-" + getAlgorithmName(algorithm) + "neighbours" + neighbourhoodSize + ".bin";
+        return "RecommendationEvaluation/engines/engine-" + getAlgorithmName(algorithm) + 
+                "neighbours" + neighbourhoodSize + ".bin";
     }
 
     /**

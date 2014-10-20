@@ -403,7 +403,7 @@ public class RecommendationEvaluation {
         File metricsDirectory = new File("metrics/" + 
                 getAlgorithmName(algorithm));
         
-        File thisRecommendationDirectory = new File("RecommendationEvaluation/metrics/" + 
+        File thisRecommendationDirectory = new File("metrics/" + 
                 getAlgorithmName(algorithm)+ "/neighbours" + neighbourhoodSize + 
                 "top" + totalRecommendations + "/");
 
