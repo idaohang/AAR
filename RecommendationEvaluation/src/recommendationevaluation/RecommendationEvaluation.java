@@ -397,11 +397,16 @@ public class RecommendationEvaluation {
      */
     private static void initialiseDirectories(Integer algorithm, Integer neighbourhoodSize,
             Integer totalRecommendations) {
+        File rootMetricsDirectory = new File("metrics");
         File metricsDirectory = new File("metrics/" + getAlgorithmName(algorithm));
         File thisRecommendationDirectory = new File("metrics/" + getAlgorithmName(algorithm)
                 + "/neighbours" + neighbourhoodSize + "top" + totalRecommendations + "/");
 
         // If the directories do not exist then create them
+        if (!rootMetricsDirectory.exists()) {
+            rootMetricsDirectory.mkdir();
+        }
+        
         if (!metricsDirectory.exists()) {
             metricsDirectory.mkdir();
         }
